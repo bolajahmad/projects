@@ -1,0 +1,95 @@
+---
+title: XCM Precompile on Polkadot AssetHub
+
+slug: xcm-precompile-assethub
+
+summary: >
+  BLS & Schnorr precompile logic in Polkadot AssetHub.
+  Solidity contracts triggering XCM without ink! or native Rust.
+
+featured: true
+
+status: completed
+
+year: 2025
+
+role: Protocol Engineer
+
+organization: Polkadot
+
+tags:
+  - Rust
+  - Substrate
+  - XCM
+  - Solidity
+  - Protocol
+
+technologies:
+  - Rust
+  - Polkadot SDK
+  - XCM
+  - AssetHub
+  - Solidity
+
+links:
+  github:
+  article:
+  demo:
+
+metrics:
+  runtimeModulesTouched: 3
+---
+
+# Overview
+
+This project explored extending the developer experience of
+Polkadot AssetHub by allowing Solidity contracts to initiate
+cross-chain operations through precompile interfaces.
+
+The work focused on understanding how XCM execution paths
+could be exposed to EVM developers without requiring
+native runtime code or ink! smart contracts.
+
+# Motivation
+
+One of the largest barriers to adoption of advanced
+Polkadot functionality is the requirement to understand
+runtime-level development.
+
+Precompiles provide an opportunity to expose runtime
+capabilities through familiar EVM interfaces.
+
+# Technical Areas
+
+- XCM
+- Runtime Architecture
+- AssetHub
+- EVM Precompiles
+- Solidity
+- BLS Signatures
+- Schnorr Signatures
+
+# Challenges
+
+## Runtime Boundaries
+
+Understanding how XCM instructions interact with
+runtime execution contexts.
+
+## Interface Design
+
+Creating abstractions that remain intuitive for Solidity
+developers while preserving runtime guarantees.
+
+# Learnings
+
+- Deep understanding of XCM execution
+- Runtime integration patterns
+- AssetHub architecture
+- Cross-consensus messaging internals
+
+# Impact
+
+This work strengthened understanding of protocol
+interoperability and runtime extensibility within
+the Polkadot ecosystem.
