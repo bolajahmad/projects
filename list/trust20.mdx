@@ -4,8 +4,9 @@ title: Trust20
 slug: trust20
 
 summary: >
-  Culinary certification platform using React,
-  AWS Lambda, DynamoDB and Stripe.
+  Multi-application culinary certification platform with a Webflow site,
+  embedded React portals, Stripe commerce flows, HubSpot automation,
+  and an AWS serverless API layer.
 
 status: completed
 
@@ -18,41 +19,82 @@ tags:
   - React
   - AWS
   - Fullstack
+  - Stripe
+  - HubSpot
 
 technologies:
   - React
+  - TypeScript
+  - Webpack
+  - Webflow
+  - HubSpot
+  - Stripe API
   - AWS Lambda
   - DynamoDB
-  - Stripe
-  - Webflow
+  - API Gateway
+  - AWS CloudWatch
 ---
 
 # Overview
 
-Trust20 is a certification platform built for
-culinary professionals and organizations.
+Trust20 is a culinary certification platform
+designed as a multi-project architecture.
+
+The product is split across 4-5 connected projects:
+
+- a Webflow marketing and enrollment frontend (built by a Webflow specialist)
+- a React-based embedded checkout and purchase experience
+- a React-based floor manager portal embedded into Webflow pages
+- a HubSpot integration layer for user data, workflow automation, and event handling
+- an AWS serverless API layer backed by DynamoDB for core application data
+
+This structure allowed each part of the system to evolve independently
+while still sharing a consistent purchase and user lifecycle.
 
 # Responsibilities
 
-- Frontend implementation
-- Serverless infrastructure
-- Payment integration
-- Database design
+- Built the Trust20 course purchase and checkout logic so customers
+  could select specific courses and pay using the Stripe API.
+- Integrated registered user and customer data into HubSpot to maintain
+  contact records and power workflows, webhooks, and state updates.
+- Built the floor manager portal in React using the required class names
+  and element IDs, then bundled it into HTML/JS for Webflow embedding.
+- Implemented and maintained the AWS serverless API layer responsible
+  for managing core business data and service orchestration.
 
-# Technical Stack
+# Architecture
 
-## Frontend
+## Webflow Frontend
 
-React embedded within Webflow.
+Primary public-facing site and content-managed experience.
+This was owned by a dedicated Webflow developer.
 
-## Backend
+## Embedded React Applications
 
-AWS Lambda powered APIs.
+Separate React bundles were embedded into Webflow pages to power:
+
+- course purchase and checkout flows
+- floor manager operational inputs
+
+The embedding contract required stable selectors and markup conventions,
+so integration compatibility was a key engineering concern.
+
+## HubSpot Automation Layer
+
+User registration and purchase lifecycle events were routed to HubSpot
+for centralized contact storage and business workflow automation.
+
+## API Layer
+
+AWS serverless APIs managed most application data operations,
+validation, and business state transitions.
 
 ## Data
 
-DynamoDB persistence layer.
+DynamoDB served as the primary persistence layer.
 
-## Payments
+# Outcome
 
-Stripe integration for certification workflows.
+Trust20 operated as a composable platform rather than a single app,
+with a clear separation between content, embedded product experiences,
+automation workflows, and serverless data services.
