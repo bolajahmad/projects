@@ -1,0 +1,93 @@
+---
+title: Mastering ink! Smart Contracts by Building a Wishlist Contract
+slug: mastering-ink-smart-contracts
+summary: A guided walkthrough of ink! v6 fundamentals using a realistic wishlist contract, from storage design and message patterns to testing and deployment.
+type: Articles
+publishedAt: Jul 25, 2025
+source: medium
+externalUrl: https://medium.com/@bjahmad4tech/mastering-ink-smart-contracts-by-building-a-wishlist-contract-cf89e1022815
+openInNewTab: true
+tags:
+  - ink!
+  - Rust
+  - Substrate
+  - Smart Contracts
+---
+
+# Mastering ink! Smart Contracts by Building a Wishlist Contract
+
+This piece uses a simple but realistic contract to explain what ink! v6 feels like in practice. Instead of starting with abstract syntax or macros in isolation, the article anchors the discussion on a wishlist contract where users create funding goals, contributors participate, and the contract enforces the payout rules.
+
+## Why the wishlist example works
+
+The contract is intentionally small, but it still exposes the most important moving parts of an ink! application:
+
+- storage layout
+- constructors
+- callable messages
+- payable interactions
+- custom data types
+- unit tests
+
+That makes it a better teaching vehicle than a toy counter while still staying compact enough to follow in one sitting.
+
+## Environment and tooling
+
+The development flow starts from the Rust toolchain and the ink! contract CLI surface. The practical setup revolves around:
+
+- Rust and Cargo for project scaffolding and compilation
+- `cargo-contract` for build, metadata, and deployment workflows
+- `pop` CLI as an optional higher-level workflow tool
+- a local node for testing deployment and interaction
+
+The key point is that ink! is still Rust. The main difference is not the language itself, but the execution environment and the macros that annotate contract-specific behavior.
+
+## Storage is the contract
+
+One of the most important ideas in ink! is that contract state is defined as a Rust struct marked as storage. The wishlist contract stores the next item identifier and a collection of items, each item holding ownership, target amount, deadline, raised total, and contribution records.
+
+That choice teaches two things immediately:
+
+- storage types must be explicit and serializable
+- custom types need SCALE-compatible derives so they can be safely stored and decoded
+
+The article uses this to explain why `Encode`, `Decode`, and contract metadata matter so much in the Substrate ecosystem.
+
+## Messages, constructors, and state transitions
+
+The contract then moves into the operational part of the design. Constructors initialize state, while messages expose behaviors. In the wishlist example, this includes creating a new item, receiving initial funding, and reading the current item state.
+
+The main lesson is that contract functions should encode invariant checks directly at the message boundary. Examples include:
+
+- rejecting zero targets
+- enforcing minimum contribution logic
+- guarding arithmetic with checked operations
+- emitting events whenever meaningful state changes happen
+
+This is where the article becomes especially useful for newer developers: it shows that the contract API is really a set of carefully defended state transitions, not just a pile of callable methods.
+
+## Testing is part of the design, not an afterthought
+
+The unit testing section reinforces that contract logic should be exercised inside the same `ink::contract` module, using the tools exposed by the ink environment. The examples focus on constructor correctness and contribution validation, but the broader point is more important: once the storage and messages are shaped correctly, testing becomes a direct expression of expected behavior.
+
+Good follow-up tests for this contract would include:
+
+- ownership checks for claiming funds
+- contributor refund behavior after a failed target
+- timestamp-dependent paths for expired wishes
+- event emission assertions
+
+## Practical takeaways
+
+If you are learning ink!, this article is most useful as a mental map:
+
+- define storage around the actual business model
+- keep message semantics strict and explicit
+- treat SCALE compatibility as part of the type design
+- use tests to validate contract invariants, not just happy paths
+
+The contract example also hints at a deeper truth about smart contract engineering on Substrate: the biggest challenge is rarely syntax. It is designing clear state, encoding safe transitions, and keeping the runtime-facing interface predictable.
+
+## Canonical source
+
+The original published version lives on Medium. This local MDX copy exists to keep the portfolio content repository self-contained and searchable.

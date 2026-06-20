@@ -1,0 +1,375 @@
+---
+title: Frontend PAPI Interaction with Solidity and EVM Chains
+slug: frontend-papi-solidity-evm
+summary: A field guide to calling Solidity contracts on Polkadot smart contract
+  environments from a frontend using PAPI, wallet integrations, and ABI
+  encoding.
+type: Articles
+publishedAt: Local draft
+source: notion
+notionUrl: https://scarlet-zinnia-086.notion.site/Frontend-PAPI-Interaction-with-solidity-EVM-chains-288c5f3533eb80228c9cf394585a88e3
+tags:
+  - PAPI
+  - Solidity
+  - Polkadot
+  - Frontend
+---
+
+# Introduction
+
+
+# Prerequisites
+
+
+To follow along with this demo, a compiled solidity contract is required. A basic setup of the following is required.
+
+1. A solidity contract set up using hardhat-polkadot,  guide is available [here](https://docs.polkadot.com/develop/smart-contracts/dev-environments/hardhat/).
+
+    You can also set up a hardhat-polkadot using the commands
+
+    1. **`npm install --save-dev @parity/hardhat-polkadot@0.1.9`**
+    2. **`npx hardhat-polkadot init`**
+2. The revive solidity compiler, [resolc](https://github.com/paritytech/revive)
+3. Node ≥ V22
+4. NextJS / React
+
+If you don’t have a Solidity contract, you can compile the one in this [demo repository here](https://github.com/polkadotafrica/solidity-papi-frontend-integration/tree/main/pvm-hardhat).
+
+
+# Deploying the Solidity Contract
+
+
+To deploy the solidity contract, we can use hardhat’s ignition deployment. For a contract that is deployed using the following constructor:
+
+
+```solidity
+constructor(address _token, address: _admin) {
+	_grantRole(DEFAULT_ADMIN_ROLE, _admin);
+	tokenAddress = IERC20(_token);
+}
+```
+
+
+the ignition script will look like the following:
+
+
+```javascript
+const { buildModule } = require("@nomicfoundation/hardhat-ignition/modules");
+
+const Vesting = buildModule("VestingModule", m => {
+	console.log("Deploying VestingModule contract");
+	
+	const deployer = m.getAccount(); // Get the deployer of the contract, is defined in ENV
+	const token = "0x9ab28d7fc04a1af08b18ec08f51fac37a313cf19";
+	const vesting = m.contract("Vesting", [deployer, token]);
+	
+	return { vesting };
+});
+
+module.exports = Vesting;
+```
+
+
+The ignition uses your private key (defined in your ENV) to know the deployer. To register your private key with hardhat, the CLI command  _`npx hardhat vars set PRIVATE_KEY "INSERT_PRIVATE_KEY"`_ works.
+
+
+Once the setup requirements above are met, we can then deploy our code to any environment of our choice, we will deploy to passetHub (a Polkadot smart contract environment). Configure _`hardhat.config.js`_ 
+
+
+```javascript
+// hardhat.config.js
+require("@nomicfoundation/hardhat-toolbox");
+require("@parity/hardhat-polkadot");
+
+const { vars } = require("hardhat/config");
+
+module.exports = {
+	...,
+	networks: {
+	hardhat: { ... },
+		...,
+		passetHub: {
+			polkavm: true,
+			url: "https://testnet-passet-hub-eth-rpc.polkadot.io",
+			accounts: [vars.get("PRIVATE_KEY")],
+			chainId: 420420422
+		}
+	}
+};
+```
+
+
+Now deploy contract using the ignition command.
+
+
+```bash
+npx hardhat ignition deploy ./ignition/modules/MyToken.js --network polkadotHubTestnet
+```
+
+
+# Interacting with the contract
+
+
+We setup a frontend environment to interact with the smart contract using NextJS, Polkadot API (PAPI). Any Typescript environment can be used in the same manner that we do here. To start with, the following are the lists of helper libraries to make the interaction with our smart contract possible. 
+
+- Polkadot API -  Typescript API to interact with Substrate-chains.
+- Viem - A Typescript interface for EVM-chains
+- talismn/connect-wallets - for accessing device-available list of (Substrate-compatible) wallets
+- [Create-dot-app](https://www.createdot.app/) - a NextJS template for building frontend dapps. This comes installed with some of the packages we need, so we only need to install the missing ones. Run the command below in your terminal and follow the prompts.
+
+    ```bash
+    npx create-dot-app@latest
+    
+    &&
+    # install after setting up the template
+    # cd <dot-app-template> to install
+    npm install viem
+    ```
+
+
+Now that we have the libraries and template all set up, we can then proceed to interact with our smart contract. The first thing we want to do is to select a wallet (and thereby an account). Create dot app comes already installed with a package that helps us do just that, _`talismn/connect-wallets`__,_ and this is what we will use.
+
+
+## Connecting a Wallet
+
+
+To connect a wallet, we need to get a list of all installed wallets on the browsing device. The code excerpt below does just this for us.
+
+
+```typescript
+import { getWallets } from "@talismn/connect-wallets";   // returns a list of all Substrate wallets
+
+// we can define a function to return the wallets we need
+// each wallet is of type Wallet
+const getWallets = () => {
+	const wallets = getWallets();
+	const installedWallets = wallets.filter((wallet) => wallet.installed);
+}
+
+// Connect to any selected wallet
+async function connect(wallet: Wallet) {
+	try {
+		setIsConnecting(wallet.extensionName);
+		await wallet.enable("DAPP_NAME"); // DAP_NAME should be unique per dapp
+		
+		// get all acounts on the enabled wallet	
+		const accounts = await wallet.getAccounts();
+		
+		// store the accounts to state
+		setAccountsList(accounts);
+		// connect the first wallet by default
+		setSelectedAccount(accounts[0]);
+	} catch (err) {
+		setSelectedAccount(undefined);
+		setAccountsList([])
+	} finally {
+		setIsConnecting(false);
+	}
+}
+
+function selectAccount(account: WalletAccount) {
+	setSelectedAccount(account);
+}
+```
+
+
+Once we have our wallet of choice connected through the approach above, we can then use this wallet to interact with our contract and also fetch information about the connected wallet. We can, for instance, write to the deployed contract. Some further optimizations for this wallet connection is to persist the connected wallet and account on the User’s device (maybe local/session storage), so they don’t have to always do the wallet connection when they refresh their app.
+
+
+> 💡 _N.B. If you setup using create-dot-app, this wallet connection logic is already implemented in this approach and you can read it to get familiar_
+
+
+## Writing to the smart contract
+
+
+The deployed smart contract has a write function to add a beneficiary and we will be calling that. The function signature is defined below
+
+
+```solidity
+function addBeneficiary(
+	address _beneficiary, 
+	uint64 end, 
+	uint256 amount
+) external payable nonRentrant { .. }
+```
+
+
+To call this function from our frontend, we need to do a couple of things.
+
+1. Ensure the API for passetHub (or the chain you’ve deployed on) is registered on the D’app. This can be confirmed by checking the PAPI config located inside the _**`/.papi/polkadot-api.json`**_ if you can see your chain there, then this step is covered. You should see a config like below inside the _“entries”._
+
+    ![N.B. The key here is passet (because that’s the chain I added, you should see your own chain as the key.](https://prod-files-secure.s3.us-west-2.amazonaws.com/59432848-663f-4995-a9f3-51504b4b0adb/c93c8589-0ca8-49cc-a09f-40bcb4efaf55/Screenshot_2025-10-15_at_05.30.42.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIAZI2LB4665QSURUOY%2F20260617%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260617T130836Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEMT%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLXdlc3QtMiJHMEUCIBvBtVXfiU6IVvwu3YfjJWDgKWnV7ohcai3coTxGB%2BTKAiEArcx%2B3SFZT8CPVpBoNpYbqwScFkEb45sUr05iMNV0c2cqiAQIjf%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARAAGgw2Mzc0MjMxODM4MDUiDBxTk2bJ6t%2B1XpHpICrcA0XGr%2FRchkjwQDI%2FziJ%2FY3Jks2Y9Djjho2E6kkgUwuSFCq82iVTmY1hiyleTZSM532DYx35wAb%2BelRuCnY06jUjeGLACs37BAucgx94xQQ60mFYprc2kapRX6juAX7onI%2F%2F5Z2y40oziYx%2B3cobgy%2FvLWamOYsYmsHU8eWs4FVerO7FP57Yiuv00H2fms9gGwMmIUUIqf4012Kz0B28rzPF%2BGP57x%2Ft6AwzHq3Wi3U8tML79wscpOSmL5zQwXKyhmoju0aVZpHpCl5vFqQy%2BFgpTyaoTRa35nEmAw60h%2FUwSlGEzEgFRt%2Bgh7pQqOB1%2F3m8z8l0wUlNDtxO4%2FpVoQq3SSNvKGJhMucQgI5ES131iogUz9LmaemwMzcHTyBhAuUimiWUSG7ZNgSEXGNX9EKQWtujVttMo%2BeB5uH7L09o43U6H3wBJf5Tr3wriVk31OkJPSsw4PQLDEZopLLPbvODEhn2r4JmldsrbxtpwTppXQHno1idvMI1DChF%2Bu8ltndyMGrNN3TOTRQuqy70H4%2FSzLtsrCCLQ5VIkJHEhk6C0mq8fybCCj74KxHTYJGyrP5%2FRJQeMmS9%2FtpK95SMXzr%2Fwo5wS32qnKbeP1ArojltJ3UY1C9bX6hFILNs8MMmWytEGOqUB8iwIxmI3SBTyVtNIViK%2FER8UhDth33C3YTxhb4mQ5jtNrdBECTrMTExfoqqFRH7F55Kw%2FK9PRbzeGzMnhtnFQlhnxS2%2BV75CMlJ9Ue4ZEmT9R0FLARcH1fLX02hHcQU%2FhcWVRgs5SEyhN8jBC1WxhnSSApgFAdvfKEc9U3J2OjGaDSc2xmYKeyQoCzsB9On4ppIJ9eoe6S6eG1ut68kpdM5RcnA%2F&X-Amz-Signature=869c98353fe208eb5ee06739e5c569e2ababfccf6429981842452ece401defdd&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject)
+
+
+    If you don’t have the chain configured already, you can run the command below to set it up
+
+
+    ```bash
+    pnpm papi add -w <WEBSOCKET_URL> <CHAIN_NAME>
+    
+    ## For passet - pnpm papi add -w wss://testnet-passet-hub.polkadot.io passet
+    ```
+
+2. Register the smart contract with Polkadot API. This is done to allow typed interactions (this is an optional step). To do that, we use the command below
+
+    ```bash
+    pnpm papi sol add ./deployments/Vesting.json vesting
+    ```
+
+
+Now we can proceed to `addBeneficiary,` 
+
+
+```typescript
+import { createClient } from "polkadot-api";
+import { passet } from "./descriptors/dist";
+import { encodeFunctionData } from "viem";
+
+const addVestingBeneficiary = async () => {
+	const client = createClient(getWsProvider("wss://socket-url"));
+	const typedApi = client.getTypedApi(passet); // reference to our added chain
+	
+	// We need to encode our function data and args for revive-compatibility
+	const data = encodeFunctionData({
+		abi: VestingContractABI,
+		functionName: "addBeneficiary",
+		args: [
+			SS58toH160(selectedAccount.address), // parse connected SS58 account to H160
+			10000n,  // timestamp in BigInt
+			10n, // amount in BigInt
+		]
+	});
+	
+	// perform a dryRun to get the gas requirements
+	// Also happens much faster so a good way to know if a call succeeds
+	const dryResult = await typedApi.apis.ReviveApi.call(
+		selectedAccount?.address || '',      
+		Binary.fromHex("0xD42492524cA1d5C6D5a9ef6b93BB806105B8e86c"),      
+		BigInt(0),      
+		undefined,      
+		undefined,      
+		Binary.fromHex(data),
+	);
+	
+	if (dryResult.result.success) {
+		const signer = await polkadotSigner(); // gets signer for the connected wallet account
+		
+		if (signer) {
+			// perform the actual call
+			const response = await typedApi.tx.Revive.call({
+				dest: Binary.fromHex("0xD42492524cA1d5C6D5a9ef6b93BB806105B8e86c"),          
+				data: Binary.fromHex(data),          
+				gas_limit: dryResult.gas_required,          
+				storage_deposit_limit: dryResult.storage_deposit.value,          
+				value: BigInt(0),
+			}).signAndSubmit(signer);  // sign and submit submits the transaction using the signer
+			
+			if (response.ok) {          
+				console.log('Transaction included in block', response.txHash)        
+			} else {          
+				console.log('Transaction failed', response)        
+			}
+		}
+	}
+ }
+```
+
+
+What is happening here?
+
+
+We use the WS client gotten to interact with the pallet-revive (on passetHub) and call the `call` function on it, which is used to call smart contract functions. Because we are interacting with Solidity contract, we use `encodeFunctionData`to encode the data into a type that is compatible with ink’s CODEC types.
+
+
+Querying a contract works in the same way and the result can be decoded using viem’s `decodeFunctionData` on the result of call like below.
+
+
+```typescript
+const decoded = decodeFunctionResult({
+	abi: VestingContractABI,
+	functionName: "beneficiaries",
+	data: callResult.result.value.data.asHex(),
+});
+```
+
+
+## Extra (deploying the contract from a Frontend)
+
+
+It’s also possible to deploy our smart contract from our Frontend  application. This is not a very common occurrence, but it’s possible and a use-case might be to deploy contract-as-a-service, where users deploy a new contract based on their requirements. The steps are the same as writing to a contract, except that we call instantiate (and not call). After we have compiled our smart contract and generated the sol ABI, we can then proceed to also generate the PolkaVM code byte. This code byte is a representation of our smart contract code and is what gets deployed into pallet-revive (as our contract).
+The polkavm byte is automatically generated when we compile our ink! smart contract, but for a Solidity contract, we need an extra step and this extra step can be covered using the _`@parity/resolc`_ compiler ([install from here](https://github.com/paritytech/revive?tab=readme-ov-file#installation)). The we can use the CLI command below to generate our .polkavm byte.
+
+
+```bash
+npx @parity/resolc --bin <path_to_abi.json>
+```
+
+
+Once we have our .polkavm generated, we can copy it into our frontend codebase and now use it to deploy our contract on the Frontend.
+
+
+Now we can write a function like below to deploy our contract.
+
+
+```typescript
+const deployeVestingContract = async () => {
+	// encode the constructor arguments
+	const deployData = encodeDeployData({
+		abi: VestingContractABI, // Our original generated ABI
+		args: [SS58toH160(selectedAccount.address)],
+		bytecode: "0x", // we don't have to pass this as it will be uploaded during instantiate
+	});
+	
+	// fetch the copied codeblob, a simple fetch request will work
+	const pvmBytes = Binary.fromBytes(generatedPVMBuffer);
+	
+	// Instantiate with code, does the actual deployment
+	const signer = await polkadotSigner();
+	if (signer) {
+		const result = await typedApi.tx.Revive.instantiate_with_code({
+			value: BigInt(0), // no transferred value on deployment (pass if constructor is payable)
+			code: pvmBytes, // this is where we pass the polkavm bytes
+			data: Binary.fromHex(deployData),
+			gas_limit: BigInt(100000000), // pass a very large value (if you're rich)
+			storage_deposit_limit: BigInt(10000000), // also pass a large value if rich
+			salt: undefined
+		}).signAndSubmit(signer);
+		
+		if (result.ok) {
+			decodeDeployData({
+				abi: VestingContractABI,
+				data: deployData,
+				bytes: "0x"
+			})
+		}
+	}
+}
+```
+
+
+This approach ensures that the data field we need for the construtor is always ABI-encoded and then the actual interaction to revive is SCALE-encoded.
+
+
+# Final Remarks
+
+
+Polkadot wallets allow interacting with Solidity smart contracts deployed on the pallet-revive (of a Substrate chain) and there’s not much differences in the approaches. 
+
+- Compile your code and generate the ABI,
+- Generate the polkaVM blob (used in the [revive.call](http://revive.call/)). This can be done using the command below
+
+    ```bash
+    npx @parity/resolc --bin <path_to_abi.json>
+    ```
+
+
+    The output is the `.polkavm` code blob
+
+- Import ABI and polkavm blob into Frontend codebase
+- Generate necessary types (for the chain and the contract(s))
+- Interact with contracts as desired
+
+This approach will be made more simplified in the future (but for now PAPI and the Polkadot wallet are made to interact seamlessly with ink! contracts), but this approach is as low-level as it gets because we have to interact with the pallet-revive directly. But in the future, this step can be abstracted away. 
+
+
+For further reference, you can follow [this codebase](https://github.com/polkadotafrica/solidity-papi-frontend-integration) as it has many of the logic explained here already implemented.

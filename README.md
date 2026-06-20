@@ -7,11 +7,12 @@ The frontend application consumes these files and renders them dynamically.
 ## Structure
 
 ```txt
-projects/
+list/
     index.mdx
     *.mdx
 
 writing/
+    index.mdx
     *.mdx
 
 about/
@@ -77,3 +78,23 @@ Supported additions:
 - metrics
 - testimonials
 - timeline
+
+## Writing Sync
+
+This repository also contains a small Node.js sync workflow for Notion-backed writing.
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Create an environment file from `.env.example` and set `NOTION_TOKEN`.
+
+Sync Notion pages into local MDX files and rebuild `writing/index.mdx`:
+
+```bash
+npm run sync:notion
+```
+
+The sync script reads `writings.config.json` and writes content into `writing/`.

@@ -1,0 +1,289 @@
+---
+title: Understanding SCALE Encoding for Substrate Networks
+slug: understanding-scale-encoding
+summary: An explanation of SCALE from first principles, including type-driven
+  encoding, compact values, metadata, and ink! contract interactions.
+type: Articles
+publishedAt: Local draft
+source: notion
+notionUrl: https://scarlet-zinnia-086.notion.site/Understanding-SCALE-Encoding-for-Substrate-networks-2b8c5f3533eb80f2b5f2ecb269792e5e
+tags:
+  - Substrate
+  - SCALE
+  - ink!
+  - Encoding
+---
+
+> _Blockchains are state machines, and every byte of state must be transmitted, validated, and stored across every node. If those bytes are inefficient, the entire network slows down. SCALE solves this by providing concise encodings: every value is encoded exactly as its type demands—nothing more. This is why Substrate pallets, XCM messages, and ink! contracts all speak the same language at the byte level._
+
+# Introduction
+
+
+The blockchain is commonly referred to as a state machine because it stores the current state of a system at a specific point in time. Technically, the “state” may include arbitrary data structures and very large values. For efficiency, blockchains typically serialize (encode) this data so that it can be transported, stored, and interpreted by different nodes in the system. The key is **standardization**: every node must encode and decode data the same way.
+
+
+Substrate-based blockchains encode data using **SCALE**, which stands for **Simple Concatenated Aggregate Little-Endian**. SCALE is intentionally minimal: values are placed side-by-side in a deterministic order, and multi-byte numbers are encoded in little-endian form. In this article, we’ll explain what SCALE is, how it works at the byte level, and how it is used throughout the Substrate ecosystem. We’ll also cover how SCALE applies to ink! smart contracts and how to encode and decode data correctly.
+
+
+# SCALE Philosophy
+
+
+We defined SCALE based on the words in the acronym (that _really_, define its design decisions);
+
+1. **Simple**
+2. **Concatenated**
+3. **Aggregate**
+4. **Little-Endian**
+
+## Simple
+
+
+SCALE encoding depends only on the **static types** being encoded.
+
+
+If the encoder and decoder both know the type `T`, they can encode and decode without any extra metadata. This is critical: **SCALE is not self-describing**.
+
+
+Example:
+
+
+> ⚠️ If you have bytes 0x0500, you cannot know whether this is a u16, two u8s, or part of a larger data structure — unless you also know the type expected.
+
+
+Ink! contracts generate a JSON metadata file during compilation. This metadata includes all static type information necessary to encode and decode calls, events, constructors, and storage. The blockchain does **not** store type information on-chain; clients rely on metadata.
+
+
+## Concatenated
+
+
+There is no complicated algorithm for the encoded data, they are literally just placed next to each other. For instance:
+
+
+```rust
+struct User {
+	id: u32;
+	balance: u128;
+	active: bool;
+}
+```
+
+
+the type above will be encoded as;
+
+
+```bash
+<u32> <u128> <bool>
+```
+
+
+If the field order changes, naturally the encoding changes and this is a breaking change. This is very efficient for blockchains where determinism is very important .
+
+
+## Aggregated
+
+
+Complex types are composed recursively using the same rules.
+
+- A `Vec<T>` has:
+    - compact length prefix
+    - followed by encoded values of `T`
+- A `struct` encodes each field in order
+- An `enum` encodes the variant index + payload
+
+SCALE doesn’t treat “complex” types specially — it applies simple rules repeatedly.
+
+
+## Little-Endian
+
+
+SCALE encodes multibyte integers in little-endian form (least significant byte first).
+
+
+This favors machine processing and avoids ambiguity, for instance,
+
+
+```markdown
+u32(30) = 30 -> 0x1E -> 0x1E000000 (as 32-bits integer)
+```
+
+
+Based on this, we can see that SCALE is purposefully non self-describing. It contains;
+
+- No field names
+- No lengths (except for Vectors/Strings)
+- No schema
+- No special identifiers
+
+As a result, it is expected that the decoder knows the type of the encoded data beforehand. This is much more lightweight for transporting data across nodes.
+
+
+Very important is the portability of SCALE which makes it possible to use across the entire Substrate stack
+
+
+# SCALE Implementation
+
+
+We will discuss SCALE and how it works for ink! contract metadata and interactions. But first, a little primer on SCALE. The codec is implemented using the [Encode](https://github.com/paritytech/parity-scale-codec/blob/master/src/codec.rs#L226-L271) and [Decode](https://github.com/paritytech/parity-scale-codec/blob/master/src/codec.rs#L296-L344) traits. The way the codec works is to convert the values into their hexadecimal equivalents. SCALE identifies 2 primary types;
+
+- Primitive types
+    - **bool** - true 0x01 false 0x00
+    - **n-bits** integers
+    - **Enum** -  they can contain compact types, like an enum that has Vector. The encoding starts with the index of the enum child and then the arguments
+    - **Structs**
+- [Compact](https://github.com/paritytech/parity-scale-codec/blob/master/src/compact.rs#L88) types are converted to hexadecimal differently, according to the logic below
+
+```markdown
+(value << 2) | mode
+
+Where mode represents which encoding range is used:
+```
+
+
+| Range | Mode | Byte length                |
+| ----- | ---- | -------------------------- |
+| < 2⁶  | 0    | 1 byte                     |
+| < 2¹⁴ | 1    | 2 bytes                    |
+| < 2³⁰ | 2    | 4 bytes                    |
+| ≥ 2³⁰ | 3    | N bytes with length prefix |
+
+
+This is used in for instance encoding the length of a Vector or String. An example is when encoding the value `vec![2,3,4,5]` . This will be equivalent to,
+
+
+```markdown
+length of Vec = 4 -> 100
+(4 << 2) -> 10000 = 16
+
+Compact encode => 0x10
+
+vec![2,3,4,5] -> 
+0x1002030405
+```
+
+
+To decode the encoded bytes above, we will need to know the expected type of the data because this byte has multiple meanings. This is the basic of how types are encoded using SCALE. For a more intuitive use-case, let us consider an ink! contract and how messages, storage and other data are encoded.
+
+
+## SCALE in Ink! Smart Contracts
+
+
+Ink! contracts use SCALE across:
+
+1. Constructor parameters
+2. Message arguments
+3. Return values
+4. Events
+5. Storage values
+
+Smart contracts written in ink! are SCALE encoded by default, unless specified otherwise (the Storage will still be SCALE encoded regardless). Let us consider a minimal smart contract written below,
+
+
+```rust
+#[ink::contract]
+mod scale_demo {
+    #[ink(storage)]
+    pub struct ScaleDemo {
+        count: u32,
+    }
+
+    impl ScaleDemo {
+        #[ink(constructor)]
+        pub fn new(init: u32) -> Self {
+            Self { count: init }
+        }
+
+        #[ink(message)]
+        pub fn inc(&mut self, v: u32) {
+            self.count += v;
+        }
+
+        #[ink(message)]
+        pub fn get(&self) -> u32 {
+            self.count
+        }
+    }
+}
+```
+
+
+This contract can then be compiled using the command `cargo contract build` . The resulting metadata will be found in the root of your project at `/target/ink/scale_demo.json.` This metadata contains all the necessary type information needed to encode/decode any given data. 
+
+
+Let’s inspect the metadata, focusing on the data that matters. The list of messages and their types.
+
+
+```json
+{
+  "spec": {
+    "messages": [
+      {
+        "label": "inc",
+        "selector": "0x991c13d3",
+        "args": [{
+          "label": "v",
+          "type": { "type": 1 }
+        }],
+        "mutates": true,
+        "returnType": null
+      },
+      {
+        "label": "get",
+        "selector": "0x2f865bd9",
+        "args": [],
+        "mutates": false,
+        "returnType": {
+          "type": 0
+        }
+      }
+    ]
+  }
+}
+```
+
+
+The types are defined in the same metadata, under a _`types`_ key. This means that, knowing the metadata, anyone can decode an encoded byte of data. 
+
+
+## Deriving SCALE using the metadata
+
+
+To reiterate, the SCALE encoded byte does not contain any further information other than the selector bytes and the encoded values which is why knowledge of the involved types must be available beforehand. To demonstrate this, say someone tries to call the _`inc`_ function of our smart contract passing the parameter 10.
+
+
+```rust
+/// Message calls inc(10)
+// Message selector = 0x991c13d3
+// Argument u32 = 10 == 0a 00 00 00 (32-bits)
+
+// Combining them all
+SCALE encoding => 0x991c13d30a000000
+
+// To decode this, decoder must know that the bytes represent a value of type U32
+```
+
+
+When you call the `inc` message is called, the data sent is this SCALE encoded bytes of data. Naturally, explorers and libraries already exist that know how to handle SCALE which means Users do not really need to do this manually. For instance, to make your data SCALE encodable in an ink! contract, you only need to decorate it with certain macros.
+
+
+```rust
+use scale::{Encode, Decode};
+
+#[derive(Encode, Decode)]
+pub struct CustomType {..}
+```
+
+
+Once this is done, ink! will already understand how to codec the `CustomType` struct and this is what is required for an ink! contract. Naturally, you don’t ever need to implement the Encode and Decode manually and should always use available libraries for this purpose. The [Polkadot docs](https://docs.polkadot.com/polkadot-protocol/parachain-basics/data-encoding/#scale-codec-libraries) document a list of available libraries for different languages and these are what should be used to handle SCALE encoding. 
+
+
+# Conclusion
+
+
+The Substrate ecosystem relies heavily on SCALE encoding to transfer data around in a very concise and small way. This is necessary to ensure speed, scalability and language-agnostic implementations. To call a message on a contract, the message name and arguments are SCALE encoded and this bytes can be decoded anywhere (runtime level, contract level etc). Major interactions and messages in Substrate can is encoded using SCALE so understanding it is very fundamental to understanding how data is handled (and storage is managed). Some examples of interactions that are SCALE encoded are:
+
+- XCM message passing
+- Runtime ↔ Pallets
+- Ink! contracts ↔ Clients
+- Ink! contracts calls (- including Events, Storage, Messages, Constructors e.t.c.)
+
+As seen in the list above, the whole ecosystem is very congruent and almost all consensus use SCALE encoding and this makes it seamless for data to move across. Data can be encoded in Rust, decoded in a frontend codebase and stored in the Substrate runtime and so on.

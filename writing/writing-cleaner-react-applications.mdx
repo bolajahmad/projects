@@ -1,0 +1,85 @@
+---
+title: 5 Tips to Writing Cleaner and Manageable React Applications
+slug: writing-cleaner-react-applications
+summary: Lessons from real React codebases on structure, hooks, classes, state management, and styling choices that keep collaboration sustainable.
+type: Articles
+publishedAt: Jun 29, 2022
+source: medium
+externalUrl: https://medium.com/@bjahmad4tech/5-tips-to-writing-cleaner-and-manageable-react-applications-a08c24de0c5f
+openInNewTab: true
+tags:
+  - React
+  - TypeScript
+  - Code Quality
+  - Frontend
+---
+
+# 5 Tips to Writing Cleaner and Manageable React Applications
+
+This article is less about React syntax and more about how React projects age. Because React is intentionally unopinionated, teams can move quickly at the start and still end up with a codebase that becomes difficult to onboard into, extend, or reason about.
+
+## Start with structure before the codebase grows
+
+One of the clearest points here is that cleanliness does not happen by accident. The article argues for establishing formatting, linting, and directory conventions immediately after bootstrapping a project, because disorder compounds quickly once the codebase grows.
+
+The broader takeaway is simple:
+
+- consistency is easier to preserve than to retrofit
+- directory boundaries communicate architecture
+- shared standards make collaboration cheaper
+
+## Keep related logic physically close
+
+The recommendation to keep components, their direct dependencies, and related hooks near each other is a useful antidote to sprawling codebases. The point is not merely aesthetics. Proximity reduces cognitive switching and helps future maintainers answer basic questions faster:
+
+- what state drives this component?
+- what helpers are specific to it?
+- what is actually shared versus accidentally duplicated?
+
+The advice to use `index` files for export boundaries is also practical. It reduces noisy import paths and isolates folder-internal refactors.
+
+## Hooks are a composition tool, not just a feature
+
+The article treats hooks as a way to move logic out of render bodies without losing access to React state and lifecycle primitives. That is the right mental model. Custom hooks are useful when they express reusable behavior, isolate workflow-specific state, or formalize repeated patterns such as pagination, filtering, or derived metadata.
+
+It also calls out `useMemo` and `useCallback`, not as performance decorations, but as tools for stabilizing logic inside reusable hooks.
+
+## Classes still have a place
+
+This is the most unusual argument in the piece, and it is useful precisely because it goes against common React-only instincts. The point is not to make React more object-oriented. It is to use classes where encapsulation of related non-UI behavior becomes clearer than scattering utility functions.
+
+Service classes or action namespaces can still be a good fit when they:
+
+- expose a coherent family of operations
+- reduce import noise
+- separate workflow logic from rendering concerns
+
+Used sparingly, they improve readability rather than fight the framework.
+
+## State management should match scope
+
+The article does a good job distinguishing local and global state in terms of blast radius. Local state is cheap and disposable. Global state is convenient but sticky. The real design question is where the state should live so that the smallest necessary number of components depends on it.
+
+That makes provider placement, state lifting, and reset behavior central concerns rather than implementation details.
+
+## Styling choices shape maintainability
+
+The final point argues for intentional styling systems, whether that means CSS-in-JS, SCSS, or utility frameworks used with discipline. The common theme is encapsulation: styles should mirror the component structure closely enough that reuse is obvious and accidental duplication is rare.
+
+The advice is still relevant even if a team chooses a different styling stack today. The core principle is that styling is architecture, not decoration.
+
+## Practical takeaway
+
+The strongest value of this article is that it treats maintainability as a product concern. React code is not judged only by whether it renders the right UI. It is also judged by whether another developer can safely change it next week.
+
+That means cleaner React apps usually share the same habits:
+
+- explicit structure
+- tight component boundaries
+- reusable hooks where logic repeats
+- careful state placement
+- styling systems that scale with the tree
+
+## Canonical source
+
+The original published version lives on Medium. This local MDX copy preserves the writing archive alongside the rest of the portfolio content.

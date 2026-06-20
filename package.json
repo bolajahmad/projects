@@ -1,0 +1,15 @@
+{
+  "name": "portfolio-content-repo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync:notion": "node ./scripts/sync-notion-writings.mjs"
+  },
+  "dependencies": {
+    "@notionhq/client": "^2.3.0",
+    "dotenv": "^17.4.2",
+    "notion-to-md": "^3.1.9",
+    "yaml": "^2.9.0"
+  }
+}

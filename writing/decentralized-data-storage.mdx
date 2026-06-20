@@ -1,0 +1,81 @@
+---
+title: The Current Status of Decentralized Data Storage
+slug: decentralized-data-storage
+summary: A practical comparison of centralized storage, IPFS, and Filecoin, with a focus on availability, content addressing, and storage market incentives.
+type: Articles
+publishedAt: Feb 18, 2023
+source: medium
+externalUrl: https://medium.com/@bjahmad4tech/the-current-status-of-decentralized-data-storage-f7588514a733
+openInNewTab: true
+tags:
+  - IPFS
+  - Filecoin
+  - Storage
+  - Web3
+---
+
+# The Current Status of Decentralized Data Storage
+
+This article frames decentralized storage as an infrastructure problem rather than a branding exercise. Instead of asking whether decentralized systems are interesting, it asks what they fix, what they still struggle with, and why blockchain applications care so much about data availability.
+
+## The problem with location-based storage
+
+Traditional cloud systems work by pointing you to a location. In practice that means your file is retrieved from a known bucket, server, or endpoint. The model scales well and is familiar, but it also means the availability of your data is tightly coupled to a particular infrastructure path.
+
+For ordinary web apps that may be acceptable. For blockchain-adjacent systems, it becomes a weakness because:
+
+- the application may depend on public, durable access to referenced data
+- metadata outages can break user experiences even when the chain itself is healthy
+- a single infrastructure provider becomes a hidden trust assumption
+
+## Why content addressing changes the model
+
+The core distinction the article emphasizes is location versus content. With IPFS, a piece of data is retrieved through its content identifier rather than a storage address. That changes the mental model from "go to where the file lives" to "reconstruct the file from the network using the identifier that uniquely represents it."
+
+This is why content addressing is such a natural fit for decentralized applications:
+
+- the identity of the content is intrinsic to the content itself
+- replication becomes easier to reason about
+- consumers can verify they got the right bytes
+
+## IPFS as the delivery substrate
+
+The IPFS section explains the three major ideas that matter most:
+
+- content identifiers
+- Merkle DAG structures
+- peer discovery via distributed hash tables
+
+That combination gives IPFS its practical value. Files can be chunked, distributed, located, and reassembled across a peer network. The article also does a good job of making clear that IPFS is not magic. It is powerful, but availability depends on whether nodes continue to store the data.
+
+## The persistence gap
+
+This is where the analysis becomes useful. IPFS solves addressing and peer distribution, but not incentives by itself. Nodes are not obligated to retain content forever. Retrieval can slow down, data can become less available, and pinning reliable replicas costs money.
+
+That tension explains why decentralized storage often feels partially solved rather than completely solved. The protocol is elegant, but durable availability requires economics.
+
+## Filecoin as the market layer
+
+Filecoin is presented as the economic extension that gives decentralized storage stronger guarantees. Storage providers are rewarded for keeping data and proving that they continue to keep it. That turns decentralized storage into a marketplace instead of a best-effort exchange system.
+
+The useful distinction is:
+
+- IPFS handles content distribution and addressing
+- Filecoin introduces incentives, deals, and verification around persistence
+
+The article also points out that this still does not erase tradeoffs. Storage deals, proof systems, and pinning economics all introduce operational decisions.
+
+## A pragmatic conclusion
+
+The strongest part of this article is that it does not romanticize the stack. It acknowledges that centralized cloud storage remains efficient and mature, while decentralized storage is still winning specific categories:
+
+- verifiable public data
+- blockchain-linked metadata
+- censorship resistance goals
+- cross-network availability assumptions
+
+The practical takeaway is not that every system should migrate to IPFS or Filecoin. It is that blockchain applications need to think carefully about where their data lives, how it is addressed, and what guarantees they actually need.
+
+## Canonical source
+
+The original published version lives on Medium. This local MDX copy keeps the portfolio writing archive complete and routable inside the content repository.

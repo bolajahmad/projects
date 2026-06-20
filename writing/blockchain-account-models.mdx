@@ -1,0 +1,79 @@
+---
+title: Blockchain Account Models: Accounting vs UTXO Models
+slug: blockchain-account-models
+summary: A conceptual comparison between account-based and UTXO-based chains, including state transition tradeoffs, privacy, and scalability.
+type: Articles
+publishedAt: May 15, 2022
+source: medium
+externalUrl: https://medium.com/@bjahmad4tech/blockchain-account-models-accounting-vs-utxo-models-23092cf3d140
+openInNewTab: true
+tags:
+  - Blockchain
+  - UTXO
+  - Ethereum
+  - Bitcoin
+---
+
+# Blockchain Account Models: Accounting vs UTXO Models
+
+This article is a solid conceptual primer on one of the most important architectural differences in blockchain systems: whether a network represents value through account balances or through unspent outputs.
+
+## Why accounting models matter
+
+Most blockchain discussions focus on consensus, tokenomics, or smart contracts, but the accounting model quietly shapes how transactions are built, how state changes are verified, and what tradeoffs a chain makes around privacy and complexity.
+
+That is what makes this topic foundational. The accounting model influences:
+
+- what a wallet really represents
+- what information a validator needs
+- how users compose transactions
+- how easy it is to reason about ownership and change
+
+## Account-based systems
+
+The account-based half of the article uses a familiar banking analogy: a user has an account and a balance, and transactions mutate that balance directly. Ethereum is the canonical example here.
+
+This makes the model intuitive for users and application developers because:
+
+- balances are easy to inspect
+- transfers feel straightforward
+- global state is simpler to conceptualize
+
+The tradeoff is that validators must understand the relevant account state in order to apply the next transition. Privacy is also weaker because balances and account histories are easier to trace as a continuous identity.
+
+## UTXO systems
+
+The UTXO model is introduced as a set of spendable fragments rather than a single running balance. That framing is important because it explains why Bitcoin-style transactions require explicit inputs, outputs, and change handling.
+
+Instead of updating one balance, a transaction consumes previous outputs and creates new ones. That means:
+
+- value is composed from pieces
+- change must be intentionally defined
+- each transaction creates a fresh state boundary
+
+This is a very different mental model from account systems, but it has meaningful benefits around verification flow and privacy.
+
+## Verification versus computation
+
+One of the better distinctions in the article is the contrast between verification-oriented and computation-oriented models. UTXO chains verify that inputs are valid and unspent, while account-based systems compute the next global state from submitted instructions.
+
+That distinction helps explain why the two models feel so different in tooling and application design even when both are ultimately moving value.
+
+## Tradeoffs that actually matter
+
+The comparison section highlights the areas where developers and protocol designers feel the difference most clearly:
+
+- memory and state shape
+- privacy characteristics
+- transaction construction complexity
+- smart contract expressiveness
+
+The useful takeaway is not that one model is universally better. It is that each model optimizes for a different set of assumptions. Account-based systems are often easier to build application layers on top of. UTXO systems offer more explicit transaction composition and often better privacy properties.
+
+## Why this remains relevant
+
+Even newer chains that blur the lines between models still inherit many of these tradeoffs. EUTXO systems, account abstractions, and hybrid execution environments all make more sense once these two base models are understood clearly.
+
+## Canonical source
+
+The original published version lives on Medium. This local MDX copy keeps the portfolio writing repository complete and self-hostable.

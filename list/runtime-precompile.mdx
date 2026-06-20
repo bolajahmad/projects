@@ -1,7 +1,7 @@
 ---
-title: XCM Precompile on Polkadot AssetHub
+title: PVM Precompile (for pallet revive)
 
-slug: runtime-precompile
+slug: pvm-runtime-precompile
 
 summary: >
   BLS & Schnorr precompile logic in Polkadot AssetHub.
@@ -9,11 +9,9 @@ summary: >
 
 featured: true
 
-status: completed
+status: active
 
-year: 2025
-
-role: Protocol Engineer
+year: 2026
 
 organization: Polkadot
 
@@ -22,19 +20,17 @@ tags:
   - Substrate
   - XCM
   - Solidity
-  - Protocol
+  - FRAME
 
 technologies:
   - Rust
   - Polkadot SDK
   - XCM
-  - AssetHub
   - Solidity
 
 links:
-  github:
-  article:
-  demo:
+  github: https://ithub.com/bolajahmad/dot-crypto-precompiles-primities
+  docs:
 
 metrics:
   runtimeModulesTouched: 3
@@ -42,54 +38,181 @@ metrics:
 
 # Overview
 
-This project explored extending the developer experience of
-Polkadot AssetHub by allowing Solidity contracts to initiate
-cross-chain operations through precompile interfaces.
+PVM Precompiles is a developer toolkit for exposing high-value
+cryptographic precompiles to smart contracts running on PVM-enabled
+parachains. The project pairs a Solidity developer surface with a
+Rust-based CLI and crate layer so teams can generate payloads,
+validate encodings, and integrate precompile calls without manually
+handling runtime byte layouts.
 
-The work focused on understanding how XCM execution paths
-could be exposed to EVM developers without requiring
-native runtime code or ink! smart contracts.
+The long-term goal is to make major and useful precompiles accessible
+through a familiar Solidity library and a companion CLI,
+while helping bring Polkadot Revive style runtime capabilities
+to a wider developer audience.
 
 # Motivation
 
-One of the largest barriers to adoption of advanced
-Polkadot functionality is the requirement to understand
-runtime-level development.
+Cryptographic operations such as BLS12-381 point arithmetic,
+multi-scalar multiplication, map-to-curve flows, pairing checks,
+and Schnorr verification are expensive to reproduce in Solidity.
+They are also difficult to encode correctly by hand, especially
+when the contract interface, runtime codec, and test vector formats
+all need to agree exactly.
 
-Precompiles provide an opportunity to expose runtime
-capabilities through familiar EVM interfaces.
+This project solves that by providing:
 
-# Technical Areas
+- a Solidity library that hides low-level precompile address routing and byte encoding
+- a CLI that generates valid test vectors, payloads, and expected outputs
+- Rust crates that implement the encoding, decoding, and deterministic data generation logic
 
-- XCM
-- Runtime Architecture
-- AssetHub
-- EVM Precompiles
-- Solidity
-- BLS Signatures
-- Schnorr Signatures
+The intended end state is a broad, practical precompile access layer
+for PVM contracts, with reusable tooling for testing and payload generation.
 
-# Challenges
+# Achitecture
 
-## Runtime Boundaries
+The repository is organized as a three-layer developer stack:
 
-Understanding how XCM instructions interact with
-runtime execution contexts.
+```mermaid
+flowchart LR
+    A[Solidity Contract] --> B[Solidity Helper Library]
+    B --> C[Precompile Address Call]
+    C --> D[PVM Runtime Dispatcher]
+    D --> E[Rust Implementation / Host Function]
+    E --> F[Encoded Result Back to Contract]
 
-## Interface Design
+    G[CLI / Rust Crates] --> H[Deterministic Payloads and Test Vectors]
+    H --> B
+    H --> A
+```
 
-Creating abstractions that remain intuitive for Solidity
-developers while preserving runtime guarantees.
+Repository roles:
 
-# Learnings
+- `solidity/` contains the typed contract-facing helper libraries,
+  reusable structs, example contracts, and deployment/test scripts.
+- `pvm-cli/` contains the command line utility used to generate and
+  validate inputs, outputs, and test data.
+- `crates/` contains Rust implementations that handle encoding,
+  decoding, vector generation, and local verification for
+  Schnorr and BLS12-381.
+- `doc/` contains architecture and workflow documentation for
+  reviewers and contributors.
 
-- Deep understanding of XCM execution
-- Runtime integration patterns
-- AssetHub architecture
-- Cross-consensus messaging internals
+Runtime precompiles themselves live in the Polkadot SDK fork
+under `pallet-revive`, while this repository provides the
+developer-facing surface around them.
 
-# Impact
+# Engineering Challenge(s)
 
-This work strengthened understanding of protocol
-interoperability and runtime extensibility within
-the Polkadot ecosystem.
+The hardest part of the project is not calling the precompile.
+It is showing the logic clearly enough that developers can trust
+the call boundary.
+
+The precompile logic already exists in the Polkadot SDK codebase,
+but the user experience in Solidity depends on correctly mirroring
+that runtime behavior:
+
+- input bytes must match the runtime codec exactly
+- curve points must be encoded and decoded consistently
+- the Solidity layer must remain ergonomic without hiding validation failures
+- test vectors need to be deterministic so contract tests can compare against fixed outputs
+
+In practice, the challenge is to compress runtime complexity into
+developer-friendly APIs without losing correctness or making the byte
+layout opaque.
+
+## Design Decisions
+
+The design intentionally separates concerns instead of forcing
+Solidity to reimplement crypto logic.
+
+- The Solidity libraries are thin wrappers around precompile addresses,
+  with typed helpers for common flows.
+- The Rust crates own low-level encoding, decoding, and deterministic
+  sample generation.
+- The CLI acts as a bridge between raw precompile payloads and
+  Solidity-friendly data shapes.
+- Shared structs such as `G1Point`, `G2Point`, `G1MSM`, `G2MSM`,
+  and `SchnorrSignature` make the contract and CLI representations align.
+
+This keeps the contract interface stable while allowing the runtime
+implementation to stay fast, native, and benchmarkable.
+
+## Reliability System
+
+The reliability model is based on pushing expensive computation into
+native runtime precompiles instead of Solidity bytecode.
+
+Key reliability properties:
+
+- the runtime performs the cryptographic work directly
+- the Solidity layer uses familiar structured inputs instead of ad hoc byte blobs
+- the CLI and Rust crates enforce codec correctness before the data reaches a contract
+- invalid lengths, malformed inputs, and mismatched array sizes are rejected early
+
+The helper libraries also keep the data packing logic centralized.
+That reduces the risk of divergent encodings across contracts,
+scripts, and tests.
+
+## Optimization
+
+The system is optimized for lower execution cost and better
+developer throughput.
+
+- Runtime precompiles are faster and cheaper than equivalent Solidity computation.
+- The helper libraries reduce repeated ABI and byte-packing logic in every contract.
+- The CLI can be installed and used from any codebase to generate payloads and validate test data locally.
+- The Rust crates provide reusable codecs and deterministic generators, which makes contract testing repeatable.
+
+The project is also structured so that future direct-to-codec
+Solidity helpers can be added if a contract needs tighter control
+over payload construction.
+
+## Security
+
+Security is handled at both the runtime and smart contract layers.
+
+- Runtime precompiles validate input lengths and structural correctness before running expensive operations.
+- The Rust helpers check curve membership and subgroup validity where relevant.
+- The Solidity wrappers surface mismatched-input conditions instead of silently producing bad payloads.
+- The precompile boundary reduces attack surface compared with reimplementing cryptography in Solidity.
+
+Because the logic sits close to the runtime, the main security
+expectation is that contract inputs must still be treated as
+untrusted. The helper libraries help enforce that discipline by
+standardizing encoding and decoding rules.
+
+## Logs And Benchmarking
+
+Benchmark logging is planned as the next layer of evidence for
+the precompile advantage.
+
+The current codebase already supports payload validation,
+deterministic test vectors, and local execution comparison.
+The next step is to add benchmark output that compares:
+
+- runtime precompile execution vs. equivalent Solidity computation
+- payload size and packing differences
+- gas or weight deltas across key operations
+
+That will make the cost savings measurable rather than only theoretical.
+
+## Integrations
+
+Current and intended integrations include:
+
+- Polkadot SDK `pallet-revive` runtime precompiles
+- Solidity contracts and libraries for contract-side usage
+- Rust CLI tooling for local generation and validation
+- Hardhat-based scripts and example contracts in `solidity/`
+- future parachain and contract integrations that want Revive-compatible cryptographic primitives
+
+The project is designed to fit into existing smart contract workflows instead of requiring a custom toolchain.
+
+## Summary
+
+PVM Precompiles provides a practical bridge between native runtime
+cryptography and Solidity contracts. The project focuses on three
+things: making the precompiles easy to use, making the payloads easy
+to trust, and making the developer workflow easy to repeat.
+
+That combination is what turns a runtime capability into a usable developer product.

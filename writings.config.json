@@ -1,0 +1,101 @@
+{
+  "title": "Writing",
+  "description": "Technical articles, field notes, and curriculum material across smart contracts, Polkadot infrastructure, and frontend engineering.",
+  "tabs": ["Articles", "Journal", "Curriculum"],
+  "entries": [
+    {
+      "slug": "mastering-ink-smart-contracts",
+      "title": "Mastering ink! Smart Contracts by Building a Wishlist Contract",
+      "summary": "A guided walkthrough of ink! v6 fundamentals using a realistic wishlist contract, from storage design and message patterns to testing and deployment.",
+      "type": "Articles",
+      "publishedAt": "Jul 25, 2025",
+      "source": "medium",
+      "externalUrl": "https://medium.com/@bjahmad4tech/mastering-ink-smart-contracts-by-building-a-wishlist-contract-cf89e1022815",
+      "openInNewTab": true,
+      "tags": ["ink!", "Rust", "Substrate", "Smart Contracts"]
+    },
+    {
+      "slug": "decentralized-data-storage",
+      "title": "The Current Status of Decentralized Data Storage",
+      "summary": "A practical comparison of centralized storage, IPFS, and Filecoin, with a focus on availability, content addressing, and storage market incentives.",
+      "type": "Articles",
+      "publishedAt": "Feb 18, 2023",
+      "source": "medium",
+      "externalUrl": "https://medium.com/@bjahmad4tech/the-current-status-of-decentralized-data-storage-f7588514a733",
+      "openInNewTab": true,
+      "tags": ["IPFS", "Filecoin", "Storage", "Web3"]
+    },
+    {
+      "slug": "writing-cleaner-react-applications",
+      "title": "5 Tips to Writing Cleaner and Manageable React Applications",
+      "summary": "Lessons from real React codebases on structure, hooks, classes, state management, and styling choices that keep collaboration sustainable.",
+      "type": "Articles",
+      "publishedAt": "Jun 29, 2022",
+      "source": "medium",
+      "externalUrl": "https://medium.com/@bjahmad4tech/5-tips-to-writing-cleaner-and-manageable-react-applications-a08c24de0c5f",
+      "openInNewTab": true,
+      "tags": ["React", "TypeScript", "Code Quality", "Frontend"]
+    },
+    {
+      "slug": "blockchain-account-models",
+      "title": "Blockchain Account Models: Accounting vs UTXO Models",
+      "summary": "A conceptual comparison between account-based and UTXO-based chains, including state transition tradeoffs, privacy, and scalability.",
+      "type": "Articles",
+      "publishedAt": "May 15, 2022",
+      "source": "medium",
+      "externalUrl": "https://medium.com/@bjahmad4tech/blockchain-account-models-accounting-vs-utxo-models-23092cf3d140",
+      "openInNewTab": true,
+      "tags": ["Blockchain", "UTXO", "Ethereum", "Bitcoin"]
+    },
+    {
+      "slug": "understanding-scale-encoding",
+      "title": "Understanding SCALE Encoding for Substrate Networks",
+      "summary": "An explanation of SCALE from first principles, including type-driven encoding, compact values, metadata, and ink! contract interactions.",
+      "type": "Articles",
+      "publishedAt": "Local draft",
+      "source": "notion",
+      "notionUrl": "https://scarlet-zinnia-086.notion.site/Understanding-SCALE-Encoding-for-Substrate-networks-2b8c5f3533eb80f2b5f2ecb269792e5e",
+      "tags": ["Substrate", "SCALE", "ink!", "Encoding"]
+    },
+    {
+      "slug": "frontend-papi-solidity-evm",
+      "title": "Frontend PAPI Interaction with Solidity and EVM Chains",
+      "summary": "A field guide to calling Solidity contracts on Polkadot smart contract environments from a frontend using PAPI, wallet integrations, and ABI encoding.",
+      "type": "Articles",
+      "publishedAt": "Local draft",
+      "source": "notion",
+      "notionUrl": "https://scarlet-zinnia-086.notion.site/Frontend-PAPI-Interaction-with-solidity-EVM-chains-288c5f3533eb80228c9cf394585a88e3",
+      "tags": ["PAPI", "Solidity", "Polkadot", "Frontend"]
+    },
+    {
+      "slug": "making-sense-of-accounts-in-ink-v6",
+      "title": "Making Sense of Accounts in ink! v6",
+      "summary": "A practical explanation of the H160 account model in ink! v6 and how to convert SS58 identities into the EVM-compatible addresses contracts now expect.",
+      "type": "Articles",
+      "publishedAt": "Local draft",
+      "source": "notion",
+      "notionUrl": "https://scarlet-zinnia-086.notion.site/Making-sense-of-Accounts-in-ink-v6-270c5f3533eb808a9a8ecd34b6b78d4a",
+      "tags": ["ink!", "H160", "Accounts", "Substrate"]
+    },
+    {
+      "slug": "xcm-polkadot-hub-precompile",
+      "title": "Implementing XCM in Polkadot Hub Using the XCM Precompile",
+      "summary": "A practical guide to using the XCM precompile from Solidity on Asset Hub, including message generation, precompile calls, and runtime execution flow.",
+      "type": "Articles",
+      "publishedAt": "Local draft",
+      "source": "notion",
+      "notionUrl": "https://scarlet-zinnia-086.notion.site/Implementing-XCM-in-Polkadot-Hub-using-the-XCM-Precompile-299c5f3533eb80218b1de952a26de6cc",
+      "tags": ["XCM", "Polkadot", "Solidity", "Asset Hub"]
+    },
+    {
+      "slug": "web3bridge-rust-ink-development-curriculum",
+      "title": "Web3Bridge Rust/Ink! Development Curriculum",
+      "summary": "A structured training map for Rust and ink! developers, covering progressively deeper contract patterns from foundations to cross-contract and cross-consensus flows.",
+      "type": "Curriculum",
+      "publishedAt": "Local draft",
+      "source": "notion",
+      "notionUrl": "https://scarlet-zinnia-086.notion.site/Web3Bridge-Rust-Ink-Development-Curriculum-285c5f3533eb801fb77ef4c008cf3b17",
+      "tags": ["Curriculum", "Rust", "ink!", "Education"]
+    }
+  ]
+}
