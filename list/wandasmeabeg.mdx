@@ -1,0 +1,226 @@
+---
+title: Wandaş Project Review
+slug: wandasmeabeg
+summary: Real-time on-chain giveaway and multiplayer mini-game platform with hybrid trust boundaries and verifier-backer prize settlement. 
+featured: true
+status: active
+year: 2026
+organization: Monad
+image: "https://your-raw-image-link-to-screenshot.png"
+tags:
+  - Websockets
+  - Blockchain
+  - Fullstack
+  - Rust
+  - Solidity
+  - Express
+technologies:
+  - PostgresQL
+  - Goldsky
+  - Web3Auth
+  - Event-drive System
+links:
+  github: https://github.com/bolajahmad/wandash-monadblitzlagos
+  docs: "https://github.com/bolajahmad/wandash-monadblitzlagos/docs/README.md
+
+metrics:
+  architecture: "Hybrid Onchain/Offchain"
+  communication: "Websocket multiplayer engine"
+  settlementModel: "Verifier-based finalization"
+---
+
+## Overview
+
+Wandaş (pronounced Wandash) is a Monad-based real-time giveaway and multiplayer mini-game platform that combines
+interactive gameplay with on-chain prize custody.
+
+The platform enables hosts to create and fund giveaways on-chain while players participate
+through low-friction browser experiences. Funds are escrowed inside smart contracts and
+prizes are distributed through signed settlement flows after gameplay completes.
+
+Rather than forcing every interaction on-chain, Wandaş adopts a hybrid architecture where
+responsiveness remains off-chain while financial integrity stays verifiable and trust-minimized.
+
+The system combines:
+
+- Next.js frontend
+- Express backend
+- WebSocket multiplayer engine
+- PostgreSQL persistence
+- Goldsky event indexing
+- Solidity contracts on Monad
+
+The long-term vision is to evolve into a highly interactive social rewards platform with
+stronger commitment and proof-based fairness mechanisms.
+
+## Motivation
+
+Traditional giveaway systems suffer from fragmented trust. Organizers coordinate:
+
+- participation
+- winner selection
+- custody of funds
+- payout distribution
+
+through multiple disconnected tools.
+
+Participants also have limited visibility into whether funds are reserved or whether
+winners are chosen fairly.
+
+Wandaş addresses these problems by:
+
+a. Locking funds before gameplay begins
+b. Separating game orchestration from fund custody
+c. Enabling real-time multiplayer experiences
+d. Pproviding verifiable prize settlement
+
+This transforms passive giveaways into interactive experiences suitable for communities,
+creators, and live events.
+
+## Achitecture
+
+The repository is organized as a layered architecture:
+
+```mermaid
+flowchart LR
+    A[Host Frontend] --> B[Giveaway Contract]
+    B --> C[Indexer]
+    C --> D[Backend Scheduler]
+
+    E[Players] --> F[Next.js Client]
+    F --> G[Websocket Server]
+
+    D --> G
+    G --> H[Round Engine]
+    H --> I [PostgreSQL]
+
+    I --> J[Winner Aggregation]
+    J --> K[Signed Finalization Payload]
+    L --> B
+```
+
+### Frontend
+
+- Next.js application
+- Zustand state management
+- Web3Auth onboarding for players
+- Wallet connections for hosts
+- Aggregated APIs combining backend and subgraph data
+
+### Backend
+
+- Express REST APIs
+- WebSocket multiplayer server
+- Round engine and scoring system
+- Scheduled activation of upcoming games
+
+### Data Layer
+
+- PostgreSQL and Prisma
+- Persistent game and player states
+- In-memory active round execution
+- Blockchain Layer
+- GiveawayV1 Solidity contract
+- Prize escrow
+- Cancellation logic
+- Verifier-based payout authorization
+- Final prize settlement
+
+### Indexing Layer
+
+Goldsky indexes chain events and acts as the bridge between blockchain state and
+application state.
+
+## Engineering Challenge(s)
+
+The primary challenge was reconciling low-latency multiplayer gameplay
+and trust-minimized financial settlement. These two requirements naturally conflict. Gameplay
+demands responsiveness and immediate feedback, while asset transfers require
+verifiable execution and security.
+
+Additional challenges included:
+
+- Synchronizing chain state with backend state
+- Recovering active games after server restarts
+- Coordinating WebSocket sessions with persistent storage
+- Maintaining responsiveness while waiting for blockchain confirmations
+
+The architecture deliberately separates orchestration from custody to preserve both user
+experience and financial guarantees.
+
+## Design Decisions
+
+### Hybrid Trust Boundary
+
+i. Gameplay remains off-chain for speed.
+ii. Fund custody remains on-chain for security.
+iii. This avoids expensive on-chain interactions while preserving verifiability.
+
+### Subgraph-first Synchronization
+
+i. Backend records are created from indexed chain events instead of frontend actions.
+ii. This reduces divergence between application state and blockchain state.
+
+### Verifier-based Settlement
+
+Winner calculation occurs off-chain, but settlement requires signature verification on-chain.
+This provides a practical v1 tradeoff between decentralization and usability.
+
+### In-memory Execution
+
+Live game rounds remain in memory while critical milestones are persisted to PostgreSQL for recovery.
+
+## Reliability System
+
+Reliability is achieved through layered state ownership.
+
+### Persistence
+
+- Games
+- Players
+- Round results, are stored in PostgreSQL.
+
+### Recovery
+
+Schedulers resume interrupted games after restart so unsettled sessions can retry finalization.
+
+### ### Source of Truth
+
+Funded giveaways originate from chain events, preventing phantom games.
+
+Graceful Shutdown
+
+Timers and database connections are cleaned up properly to avoid corruption.
+
+## Optimization
+
+Several optimizations prioritize responsiveness.
+
+### Gameplay
+
+- WebSockets replace polling
+- Active state stays in memory
+- Zustand minimizes frontend rerenders
+
+### Data Access
+
+- Goldsky avoids chain scanning
+- Indexed database queries
+- Aggregated APIs reduce frontend complexity
+
+Settlement
+
+- Winners are aggregated before payout
+- Asynchronous transaction submission prevents chain latency from blocking gameplay
+
+## Security
+
+Security is built around explicit trust boundaries.
+
+_Hash Commitments:_ Winner payloads are hashed before verification, creating a basis for
+future auditability and commitment schemes.
+
+## Observability
+
+Current observability is made of: structured logging, module-level tracing, transaction hashes,
+scheduler events, and error paths.
