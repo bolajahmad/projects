@@ -115,6 +115,8 @@ S --> R
 F[Frontend Dashboard] --> S
 F --> B
 
+```
+
 ### Frontend
 
 - Next.js dashboard
@@ -138,6 +140,7 @@ F --> B
 - Attestation Registry
 
 ### SDK and MCP
+
 - Agent tooling
 - SSE and streamable HTTP interfaces
 - LLM integration surface
@@ -177,16 +180,16 @@ wallet architecture toward vault-backed settlement flows.
 
 ## Design Decisions
 
-*Separation of Concerns*: Identity, authorization, settlement, and
+_Separation of Concerns_: Identity, authorization, settlement, and
 attestations are isolated into dedicated modules. This improves modularity and
 simplifies reasoning about protocol behavior.
 
-*Centralized Session State*:
+_Centralized Session State_:
 
 Session validity is owned by the Identity Registry instead of duplicated across contracts. This
 creates a single source of truth for authorization.
 
-*Multiple Settlement Modes*:
+_Multiple Settlement Modes_:
 
 The backend supports:
 
@@ -196,7 +199,7 @@ The backend supports:
 
 Different workloads require different economic models.
 
-*Commitment-based Audit Layer*: Instead of storing every interaction on-chain, service
+_Commitment-based Audit Layer_: Instead of storing every interaction on-chain, service
 logs are batched and committed through Merkle roots. This preserves verifiability
 while minimizing costs.
 
@@ -204,11 +207,11 @@ while minimizing costs.
 
 Although prototype-grade, several reliability mechanisms exist.
 
-*Session Expiration*: Expired delegated permissions are automatically invalidated.
+_Session Expiration_: Expired delegated permissions are automatically invalidated.
 
-*Challenge Windows*: Payment channels support dispute and correction mechanisms.
+_Challenge Windows_: Payment channels support dispute and correction mechanisms.
 
-*Cooperative Settlement*: Channels can close immediately when participants agree.
+_Cooperative Settlement_: Channels can close immediately when participants agree.
 
 ### Reliability Limitations
 
@@ -228,13 +231,13 @@ the tax of interacting with on-chain systems remain. Every onchain interaction
 is subjected to the latency (of finalization) so ideally, the system is focused
 on reducing unnecessary onchain interactions.
 
-a. *Settlement Optimization*: Payment channels aggregate multiple service calls into fewer transactions.
+a. _Settlement Optimization_: Payment channels aggregate multiple service calls into fewer transactions.
 Cumulative receipts ensure the eventual cost of service cannot be manipulated, without evidence.
 
-b. *Audit Optimization*: Usage logs are batched into merkle roots, rather than
+b. _Audit Optimization_: Usage logs are batched into merkle roots, rather than
 stored individually.
 
-c. *Runtime Optimization*: Static network providers reduce RPC overhead while an offchain indexer queries without birdening APIs.
+c. _Runtime Optimization_: Static network providers reduce RPC overhead while an offchain indexer queries without birdening APIs.
 The offchain indexer has richer infomation about what has happened onchain, ensuring users do
 not have to keep long overdue, and settled payemnt in their storage. Only the latest states (and merkle information)
 are needed.
@@ -254,23 +257,23 @@ DAP ensures the system is secured against these vectors by implementing:
 1. Session-scoped Authorization: Agents operate through delegated session keys, never using the User's primary keys.
 
 2. Time & Usage bounded Permissions: On top of the session keys, there is also a time limit within which the
-Session key only has access for max Usage (or cost). Ideally, EOA is tasked with generating session keys, and
-assigning them to agents in advance.
+   Session key only has access for max Usage (or cost). Ideally, EOA is tasked with generating session keys, and
+   assigning them to agents in advance.
 
 3. Replay Protection: Nonce(s) and cumulative receipts ensure that agents do not pay more than what they consume,
-and service providers do not get underpaid.
+   and service providers do not get underpaid.
 
 4. Merkle Commitments: Usage records are committed through deterministic hash trees, enabling compact proofs and auditability.
 
 5. Smart contract enforcement: Contracts are the canonical source of truth for:
+
 - Session validity: using account abstraction contracts
 - Channel state transitions: while channel state accumulate locally, they have to be sent onchain
-using the valid merkle proofs, and usage.
+  using the valid merkle proofs, and usage.
 - Attestation Anchoring
 
 6. Attestation Anchoring: Every interaction between agents, can be attested and validated onchain
-(following [EIP-8004](https://eips.ethereum.org/EIPS/eip-8004)).
-
+   (following [EIP-8004](https://eips.ethereum.org/EIPS/eip-8004)).
 
 ## Integrations
 
@@ -285,6 +288,3 @@ Building the system reinforced several insights and among them, the most notable
 - Identity, authorization and settlement are fundamentall independent layers
 - Major challenge of agentic payment system is trust, with more agents (the trust boundary is shaken)
 - There is always a fundamental problem in agentic payment, autonomity is near impossible
-
-
-```
