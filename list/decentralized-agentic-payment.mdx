@@ -1,0 +1,290 @@
+---
+title: Decentralized Agentic Payment
+slug: decentralized-agentic-payment
+summary: Machine-native payment infrastructure for AI agents using session-scoped authorization, x402 payments, payment channels, and verifiable audit commitments.
+featured: true
+status: archived
+year: 2026
+organization: Kite AI
+image: "https://your-raw-image-link-to-screenshot.png"
+tags:
+  - Solidity
+  - Account Abstraction
+  - x402
+  - Session Keys
+  - MCP
+technologies:
+  - Solidity
+  - Typescript
+  - Express
+  - Viem
+  - SSE
+  - The Graph
+links:
+  github: https://github.com/bolajahmad/kite-agentic-settle
+  docs: "https://github.com/bolajahmad/kite-agentic-settle/tree/main/doc"
+
+metrics:
+  settlementModel: "Per-call x402 and channel-based settlement"
+  authorizationModel: "Session-scoped delegated payments"
+  auditModel: "Merkle commitment anchoring"
+  indexingLayer: "Subgraph-powered analytics"
+
+hackathon:
+  name: "Kite AI Hackathon"
+  prize: ""
+---
+
+## Overview
+
+Decentralized Agentic Payment is an experimental machine-native payment infrastructure
+that enables AI agents to autonomously consume APIs and compute services under
+user-controlled authorization.
+
+The system combines:
+
+- session-scoped agent identities
+- x402 HTTP payments
+- payment channels
+- MCP tooling
+- Merkle-based audit commitments
+- subgraph indexing
+
+into a unified architecture designed for programmable and verifiable machine payments.
+
+Rather than relying on traditional billing relationships, static API keys, or
+centralized accounts, the system enables users to delegate bounded spending permissions to
+autonomous agents while preserving cryptographic guarantees and explicit authorization rules.
+
+Although archived, the project represents a serious exploration into agentic commerce and
+decentralized payment infrastructure.
+
+## Motivation
+
+Traditional API monetization assumes:
+
+- human users
+- stored cards
+- centralized accounts
+- static API keys
+
+These assumptions break down for autonomous agents, where actors require:
+
+- identity
+- delegated authority
+- provider restrictions
+- session expiration
+- programmable payment flows
+- verifiable settlement
+
+The project addresses these limitations by allowing users to fund on-chain accounts and
+delegate session-scoped authority to agents that can pay service providers under explicitly
+defined rules.
+
+The long-term goal is to create infrastructure for machine-native economies where agents
+can securely and autonomously consume resources.
+
+# Achitecture
+
+The platform follows a layered protocol architecture.
+
+```mermaid
+flowchart LR
+
+U[User / EOA] --> I[Identity Registry]
+U --> V[Wallet or Vault]
+U --> A[Session Key]
+
+A --> B[Provider Backend]
+
+B --> X[x402 Settlement]
+B --> C[Payment Channel]
+
+X --> V
+C --> V
+
+B --> M[MCP Server]
+B --> G[Usage Aggregator]
+
+G --> R[Attestation Registry]
+
+S[Subgraph] --> I
+S --> C
+S --> R
+
+F[Frontend Dashboard] --> S
+F --> B
+
+### Frontend
+
+- Next.js dashboard
+- Payment visibility
+- Session monitoring
+- Channel inspection
+
+### Backend
+
+- Express APIs
+- x402 middleware
+- Payment channel middleware
+- MCP transport
+- Usage aggregation
+
+### Smart Contracts
+
+- Identity Registry
+- Wallet / Vault layer
+- Payment Channel contract
+- Attestation Registry
+
+### SDK and MCP
+- Agent tooling
+- SSE and streamable HTTP interfaces
+- LLM integration surface
+
+### Indexing
+
+- Event-driven read models
+- Analytics layer
+- Protocol visibility
+
+## Engineering Challenges
+
+The primary challenge was not token transfers but rather enabling:
+
+- agent autonomy
+- bounded spending authority
+- efficient settlement
+- service auditability
+- interoperability
+
+without sacrificing user ownership.
+
+Several engineering problems emerged:
+
+Agent Identity: agents require independent identities without removing user control.
+
+Delegated Authority: agents need permission to spend, but only within predefined constraints.
+
+Efficient Settlement: frequent API payments make direct on-chain settlement prohibitively expensive.
+
+Auditability: off-chain service execution requires verifiable evidence.
+
+Standardized Agent Integration: different AI systems require a common transport and interaction model.
+
+The most difficult unresolved problem was migrating from the original account abstraction
+wallet architecture toward vault-backed settlement flows.
+
+## Design Decisions
+
+*Separation of Concerns*: Identity, authorization, settlement, and
+attestations are isolated into dedicated modules. This improves modularity and
+simplifies reasoning about protocol behavior.
+
+*Centralized Session State*:
+
+Session validity is owned by the Identity Registry instead of duplicated across contracts. This
+creates a single source of truth for authorization.
+
+*Multiple Settlement Modes*:
+
+The backend supports:
+
+- per-call x402 payments
+- channel-based payments
+- flexible hybrid flows
+
+Different workloads require different economic models.
+
+*Commitment-based Audit Layer*: Instead of storing every interaction on-chain, service
+logs are batched and committed through Merkle roots. This preserves verifiability
+while minimizing costs.
+
+### Reliability System
+
+Although prototype-grade, several reliability mechanisms exist.
+
+*Session Expiration*: Expired delegated permissions are automatically invalidated.
+
+*Challenge Windows*: Payment channels support dispute and correction mechanisms.
+
+*Cooperative Settlement*: Channels can close immediately when participants agree.
+
+### Reliability Limitations
+
+The archived design still relied on:
+
+- polling watchers
+- in-memory runtime state
+- limited retry mechanisms
+- missing queue infrastructure
+- minimal operational metrics
+
+## Optimization
+
+Agentic payment are not expected to deal a lot with on-chain activities.
+While agents move fast and can process multiple instructions in one go,
+the tax of interacting with on-chain systems remain. Every onchain interaction
+is subjected to the latency (of finalization) so ideally, the system is focused
+on reducing unnecessary onchain interactions.
+
+a. *Settlement Optimization*: Payment channels aggregate multiple service calls into fewer transactions.
+Cumulative receipts ensure the eventual cost of service cannot be manipulated, without evidence.
+
+b. *Audit Optimization*: Usage logs are batched into merkle roots, rather than
+stored individually.
+
+c. *Runtime Optimization*: Static network providers reduce RPC overhead while an offchain indexer queries without birdening APIs.
+The offchain indexer has richer infomation about what has happened onchain, ensuring users do
+not have to keep long overdue, and settled payemnt in their storage. Only the latest states (and merkle information)
+are needed.
+
+## Security
+
+One of the most critical aspects of the system. When it comes to agentic systems trading services,
+the important security aspects arise from attempts to automate. It is important to;
+
+- Secure EOA's funds
+- Secure secret keys
+- Avoid replay attacks
+- Mediate disputes (and withdrawn payments)
+
+DAP ensures the system is secured against these vectors by implementing:
+
+1. Session-scoped Authorization: Agents operate through delegated session keys, never using the User's primary keys.
+
+2. Time & Usage bounded Permissions: On top of the session keys, there is also a time limit within which the
+Session key only has access for max Usage (or cost). Ideally, EOA is tasked with generating session keys, and
+assigning them to agents in advance.
+
+3. Replay Protection: Nonce(s) and cumulative receipts ensure that agents do not pay more than what they consume,
+and service providers do not get underpaid.
+
+4. Merkle Commitments: Usage records are committed through deterministic hash trees, enabling compact proofs and auditability.
+
+5. Smart contract enforcement: Contracts are the canonical source of truth for:
+- Session validity: using account abstraction contracts
+- Channel state transitions: while channel state accumulate locally, they have to be sent onchain
+using the valid merkle proofs, and usage.
+- Attestation Anchoring
+
+6. Attestation Anchoring: Every interaction between agents, can be attested and validated onchain
+(following [EIP-8004](https://eips.ethereum.org/EIPS/eip-8004)).
+
+
+## Integrations
+
+### Lessons learned
+
+Building the system reinforced several insights and among them, the most notable are;
+
+- Agent payments require more than wallet ownership
+- Delegated (Session management) is a protocol problem, not just a UX issue
+- Per-call (x402) settlement is economically inefficient for the agents it was made for
+- Commitments and Cryptography are an important solution to balance the problem of cost and auditability
+- Identity, authorization and settlement are fundamentall independent layers
+- Major challenge of agentic payment system is trust, with more agents (the trust boundary is shaken)
+- There is always a fundamental problem in agentic payment, autonomity is near impossible
+
+
+```
