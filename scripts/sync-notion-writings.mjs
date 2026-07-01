@@ -14,6 +14,7 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..");
 const writingDir = path.join(repoRoot, "writing");
 const configPath = path.join(repoRoot, "writings.config.json");
+const imagesDir = path.join(writingDir, "images");
 
 function extractPageId(url) {
   const normalized = url.replace(/-/g, "");
@@ -76,6 +77,23 @@ async function writeIndexFile(config) {
   );
 }
 
+async function downloadImage(url, destPath) {
+  // 1. Send an HTTP request to Notion's private AWS link to request the image file
+  const response = await fetch(url);
+  if (!response.ok)
+    throw new Error(`Failed to fetch image: ${response.statusText}`);
+
+  // 2. Read the incoming image data as raw, unformatted binary data (zeros and ones)
+  const arrayBuffer = await response.arrayBuffer();
+
+  // 3. Convert that raw data into a Node.js "Buffer" so the computer recognizes it as an actual file
+  const buffer = Buffer.from(arrayBuffer);
+
+  // 4. Physically write and save that file onto your hard drive at the 'destPath'
+  // (e.g., saving it permanently as "writing/images/my-first-post-0.png")
+  await fs.writeFile(destPath, buffer);
+}
+
 async function main() {
   const notionToken = process.env.NOTION_TOKEN;
 
@@ -90,6 +108,7 @@ async function main() {
   const n2m = new NotionToMarkdown({ notionClient: notion });
 
   await fs.mkdir(writingDir, { recursive: true });
+  await fs.mkdir(imagesDir, { recursive: true });
   await writeIndexFile(config);
 
   for (const entry of config.entries) {
@@ -98,6 +117,33 @@ async function main() {
     }
 
     const pageId = extractPageId(entry.notionUrl);
+    let imgCounter = 0;
+
+    n2m.setCustomTransformer("image", async (block) => {
+      const { image } = block;
+      if (!image) return "";
+
+      const imgUrl =
+        image.type === "file" ? image.file.url : image.external.url;
+      const caption =
+        image.caption?.map((c) => c.plain_text).join(" ") ?? "Notion Image";
+
+      try {
+        const urlWithoutQuerystring = imgUrl.split("?")[0] || "";
+        const ext = path.extname(urlWithoutQuerystring) || ".png";
+
+        const filename = `${entry.slug}-${imgCounter}${ext}`;
+        const localImagePath = path.join(imagesDir, filename);
+
+        await downloadImage(imgUrl, localImagePath);
+        imgCounter++;
+
+        return `![${caption}](./images/${filename})`;
+      } catch (error) {
+        console.error(`Failed to process image in block ${block.id}:`, error);
+        return `![${caption}](${imgUrl})`;
+      }
+    });
     const mdBlocks = await n2m.pageToMarkdown(pageId);
     const markdown = n2m.toMarkdownString(mdBlocks).parent;
     const document = buildDocument(toFrontmatter(entry), markdown);
