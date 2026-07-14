@@ -48,21 +48,20 @@ PVM Precompiles is a developer tooling ecosystem for building against runtime pr
 
 # Motivation
 
-Cryptographic operations such as BLS12-381 point arithmetic,
-multi-scalar multiplication, map-to-curve flows, pairing checks,
-and Schnorr verification are expensive to reproduce in Solidity.
-They are also difficult to encode correctly by hand, especially
-when the contract interface, runtime codec, and test vector formats
-all need to agree exactly.
+One of the biggest advantages of **Substrate-based runtimes** is that application-specific functionality can be added without forcing smart contract developers to reimplement complex logic in Solidity.
 
-This project solves that by providing:
+With **pallet-revive**, runtime modules can expose native functionality as Solidity-accessible precompiles. Unlike traditional EVM chains where introducing new precompiles often requires years of ecosystem coordination or hard forks, Substrate runtimes can evolve through governance-controlled runtime upgrades while preserving existing contract interfaces.
 
-- a Solidity library that hides low-level precompile address routing and byte encoding
-- a CLI that generates valid test vectors, payloads, and expected outputs
-- Rust crates that implement the encoding, decoding, and deterministic data generation logic
+This changes what smart contracts are capable of. Instead of implementing expensive algorithms directly in Solidity, contracts can delegate execution to highly optimized Rust implementations running inside the runtime itself. The result is significantly lower gas costs, faster execution, and access to capabilities that would otherwise be impractical inside the EVM execution model.
 
-The intended end state is a broad, practical precompile access layer
-for PVM contracts, with reusable tooling for testing and payload generation.
+These capabilities are not limited to cryptography. Any runtime pallet can expose functionality through precompiles, allowing Solidity contracts to interact directly with native runtime components such as:
+
+- Cryptographic primitives
+- XCM messaging
+- Asset management
+- Identity systems
+- Governance modules
+- Future runtime capabilities such as staking (or custom-chain specific logic).
 
 # Achitecture
 
