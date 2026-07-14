@@ -63,6 +63,26 @@ These capabilities are not limited to cryptography. Any runtime pallet can expos
 - Governance modules
 - Future runtime capabilities such as staking (or custom-chain specific logic).
 
+```mermaid
+graph TD
+    %% Styling Themes
+    classDef frontend fill:#E3F2FD,stroke:#1E88E5,stroke-width:2px,color:#0D47A1;
+    classDef sdk fill:#EDE7F6,stroke:#5E35B1,stroke-width:2px,color:#4A148C;
+    classDef encoding fill:#FFF3E0,stroke:#FB8C00,stroke-width:2px,color:#E65100;
+    classDef dispatch fill:#F1F8E9,stroke:#7CB342,stroke-width:2px,color:#33691E;
+    classDef native fill:#FFEBEE,stroke:#E53935,stroke-width:2px,color:#B71C1C;
+
+    A[Solidity Contract] --> B[Solidity Helper Library]
+    B --> C[Precompile Address Call]
+    C --> D[PVM Runtime Dispatcher]
+    D --> E[Rust Implementation / Host Function]
+    E --> F[Encoded Result Back to Contract]
+
+    G[CLI / Rust Crates] --> H[Deterministic Payloads and Test Vectors]
+    H --> B
+    H --> A
+```
+
 <figure>
 ```mermaid
 graph TD
@@ -92,9 +112,11 @@ graph TD
 
 ````
 
-<figcaption align="center">Architecture representation</figcaption>
+<figcaption>Architecture representation</figcaption>
 </figure>
 
+
+<figure>
 ```mermaid
 graph TD
     %% Styling Themes
@@ -124,6 +146,9 @@ graph TD
     CLI --> Core_Engine
     Core_Engine -->|Used By| Consumers
 ````
+
+<figcaption>Architecture representation</figcaption>
+</figure>
 
 Repository roles:
 
