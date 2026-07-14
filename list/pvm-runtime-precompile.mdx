@@ -41,42 +41,97 @@ It provides the SDKs, helper libraries, codecs, CLI tooling, and documentation n
 
 The repository demonstrates how runtime capabilities implemented in Rust can be surfaced as ergonomic Solidity APIs while preserving correctness, performance, and compatibility with pallet-revive.
 
-Although the initial implementation focuses on cryptographic primitives such as BLS12-381 and Schnorr verification, the architecture is intentionally generic and is designed to support any runtime module that exposes functionality through Revive precompiles, including pallets such as XCM, Assets, Identity, Governance, and future protocol extensions.
+Although the initial implementation focuses on cryptographic primitives such as _BLS12-381_ and _Schnorr_ verification, the architecture is intentionally generic and is designed to support any runtime module that exposes functionality through Revive precompiles, including pallets such as XCM, Assets, Identity, Governance, and future protocol extensions.
 PVM Precompiles is a developer tooling ecosystem for building against runtime precompiles
 
 # Motivation
 
-Cryptographic operations such as BLS12-381 point arithmetic,
-multi-scalar multiplication, map-to-curve flows, pairing checks,
-and Schnorr verification are expensive to reproduce in Solidity.
-They are also difficult to encode correctly by hand, especially
-when the contract interface, runtime codec, and test vector formats
-all need to agree exactly.
+One of the advantages of **Substrate-based runtimes** is that application-specific functionality can be added without forcing smart contract developers to reimplement complex logic in Solidity.
 
-This project solves that by providing:
+With **pallet-revive**, runtime modules can expose native functionalitiy as Solidity-accessible precompiles. Unlike traditional, EVM chains where introducing new precompiles often requires years of ecosystem coordination or hard forks, Substrate runtimes can evolve through governance-controlled runtime upgrades while preserving existing contract interfaces.
 
-- a Solidity library that hides low-level precompile address routing and byte encoding
-- a CLI that generates valid test vectors, payloads, and expected outputs
-- Rust crates that implement the encoding, decoding, and deterministic data generation logic
+This changes what smart contracts are capable of.
 
-The intended end state is a broad, practical precompile access layer
-for PVM contracts, with reusable tooling for testing and payload generation.
+Instead of implementing expensive algorithms directly in Solidity, contracts can delegate execution to highly optimized Rust implementations running inside the runtime itself. The result is significantly lower gas costs, faster execution, and access to capabilities that would otherwise be impractical inside the EVM execution model.
+
+These capabilities are not limited to cryptography.
+
+Any runtime pallet can expose functionality through precompiles, allowing Solidity contracts to interact directly with native runtime components such as:
+
+- Cryptographic primitives
+- XCM Messaging
+- Asset management
+- Identity systems
+- Governance modules
+- Future runtime capabilities such as staking (or custom chain-specific logic).
+
+As more runtimes adopt revive, the challenge shifts from implememting precompiles to making them usable.
+
+Calling a precompile often requires manually constructing binary payloads, understanding SCALE encodings, runtime-specific data layouts, and low-level ABI interactions. WHile powerful, this developer experience creates a significant barrier for contract developers.
+
+PVM Precompiles was built to remove these barriers. It provides a complete developer toolkit that allows Solidity developers to interact with runtime precompiles using structured types and familiar APIs while automatically handling encoding, payload generation, validation, and testing behind the scenes.
+
+Instead of dealing with opaque byte arrays, developers work with strongly typed Rust/Solidity abstractions, allowing the full capabilities of revive-enabled runtimes to be consumed through a modern developer workflow.
 
 # Achitecture
 
 The repository is organized as a three-layer developer stack:
 
 ```mermaid
-flowchart LR
-    A[Solidity Contract] --> B[Solidity Helper Library]
-    B --> C[Precompile Address Call]
-    C --> D[PVM Runtime Dispatcher]
-    D --> E[Rust Implementation / Host Function]
-    E --> F[Encoded Result Back to Contract]
+graph TD
+    %% Styling Themes
+    classDef frontend fill:#E3F2FD,stroke:#1E88E5,stroke-width:2px,color:#0D47A1;
+    classDef sdk fill:#EDE7F6,stroke:#5E35B1,stroke-width:2px,color:#4A148C;
+    classDef encoding fill:#FFF3E0,stroke:#FB8C00,stroke-width:2px,color:#E65100;
+    classDef dispatch fill:#F1F8E9,stroke:#7CB342,stroke-width:2px,color:#33691E;
+    classDef native fill:#FFEBEE,stroke:#E53935,stroke-width:2px,color:#B71C1C;
 
-    G[CLI / Rust Crates] --> H[Deterministic Payloads and Test Vectors]
-    H --> B
-    H --> A
+    %% Nodes
+    Node1[Solidity Contract]:::frontend
+    Node2[Typed Solidity SDK<br/><i>Structs, Helpers, ABI Layer</i>]:::sdk
+    Node3[SCALE / ABI Encoding Layer]:::encoding
+    Node4[Runtime Precompile Dispatcher]:::dispatch
+    Node5[pallet-revive Runtime Interface]:::dispatch
+    Node6[Native Rust Runtime Implementation]:::native
+    Node7[(Runtime Pallets / Host Functions)]:::native
+
+    %% Flows
+    Node1 --> Node2
+    Node2 --> Node3
+    Node3 --> Node4
+    Node4 --> Node5
+    Node5 --> Node6
+    Node6 --> Node7
+```
+
+```mermaid
+graph TD
+    %% Styling Themes
+    classDef cli fill:#ECEFF1,stroke:#455A64,stroke-width:2px,color:#263238;
+    classDef core fill:#E0F7FA,stroke:#00ACC1,stroke-width:2px,color:#006064;
+    classDef consumer fill:#F3E5F5,stroke:#8E24AA,stroke-width:2px,color:#4A148C;
+
+    %% Layout Structure
+    CLI[Rust CLI]:::cli
+
+    subgraph Core_Engine [Internal Modules]
+        Codecs[Codecs]:::core
+        Payload[Payload Builders]:::core
+        Vector[Vector Generator]:::core
+        Bench[Benchmark Helpers]:::core
+        Valid[Validation]:::core
+    end
+
+    subgraph Consumers [Used By]
+        Sol[Solidity SDK]:::consumer
+        Test[Tests]:::consumer
+        Ex[Examples]:::consumer
+        Doc[Documentation]:::consumer
+    end
+
+    %% Connections
+    CLI --> Core_Engine
+    Core_Engine -->|Used By| Consumers
 ```
 
 Repository roles:
