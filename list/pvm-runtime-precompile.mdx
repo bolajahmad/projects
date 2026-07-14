@@ -2,7 +2,7 @@
 title: PVM Precompiles (for revive-compatible runtime(s))
 slug: pvm-runtime-precompile
 summary: >
-  A smart contract development tooling for interacting with cryptographic primitives deployed on,
+  A smart contract development tooling for interacting with runtime primitives deployed on,
   Substrate revive runtimes, for Solidity and Rust developers.
 
 featured: true
@@ -161,22 +161,11 @@ developer-facing surface around them.
 
 # Engineering Challenge(s)
 
-The hardest part of the project is not calling the precompile.
-It is showing the logic clearly enough that developers can trust
-the call boundary.
+The primary engineering challenge is maintaining protocol consistency across all development environments. WHile the CLI and SDK exist in this repository, the actual precompile implementation lives inside the runtime.
 
-The precompile logic already exists in the Polkadot SDK codebase,
-but the user experience in Solidity depends on correctly mirroring
-that runtime behavior:
+These environments represent data differently, and most importantly, include certain crates that have to be version-bound. The versions of these crates change with the runtime code, but the SDK has to consistently monitor the runtime to be ready to upgrade in case of changes.
 
-- input bytes must match the runtime codec exactly
-- curve points must be encoded and decoded consistently
-- the Solidity layer must remain ergonomic without hiding validation failures
-- test vectors need to be deterministic so contract tests can compare against fixed outputs
-
-In practice, the challenge is to compress runtime complexity into
-developer-friendly APIs without losing correctness or making the byte
-layout opaque.
+The project therefore focuses less on implementing cryptographic algorithms themselves, which already exists in the runtime, and more on guaranteeing that developers can incoke those capabilities safely through deterministic SDK abstractions.
 
 ## Design Decisions
 
@@ -213,17 +202,14 @@ scripts, and tests.
 
 ## Optimization
 
-The system is optimized for lower execution cost and better
-developer throughput.
+The system is primarily optimized, not only for runtime execution, but also developer productivity.
+
+By replacing handwritten payload with strongly typed helper libraries, the toolkit reduces integration complexity. eliminates repeated encoding across projects, and shortens the feedback loop during contract development.
 
 - Runtime precompiles are faster and cheaper than equivalent Solidity computation.
 - The helper libraries reduce repeated ABI and byte-packing logic in every contract.
 - The CLI can be installed and used from any codebase to generate payloads and validate test data locally.
 - The Rust crates provide reusable codecs and deterministic generators, which makes contract testing repeatable.
-
-The project is also structured so that future direct-to-codec
-Solidity helpers can be added if a contract needs tighter control
-over payload construction.
 
 ## Security
 
@@ -254,7 +240,7 @@ The next step is to add benchmark output that compares:
 
 That will make the cost savings measurable rather than only theoretical.
 
-## Integrations
+## Ecosystem Integrations
 
 Current and intended integrations include:
 
