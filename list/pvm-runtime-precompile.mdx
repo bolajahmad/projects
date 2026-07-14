@@ -63,10 +63,7 @@ These capabilities are not limited to cryptography. Any runtime pallet can expos
 - Governance modules
 - Future runtime capabilities such as staking (or custom-chain specific logic).
 
-# Achitecture
-
-The repository is organized as a three-layer developer stack:
-
+<figure>
 ```mermaid
 graph TD
     %% Styling Themes
@@ -92,7 +89,11 @@ graph TD
     Node4 --> Node5
     Node5 --> Node6
     Node6 --> Node7
-```
+
+````
+
+<figcaption align="center">Architecture representation</figcaption>
+</figure>
 
 ```mermaid
 graph TD
@@ -122,7 +123,7 @@ graph TD
     %% Connections
     CLI --> Core_Engine
     Core_Engine -->|Used By| Consumers
-```
+````
 
 Repository roles:
 
