@@ -65,13 +65,6 @@ These capabilities are not limited to cryptography. Any runtime pallet can expos
 
 ```mermaid
 graph TD
-    %% Styling Themes
-    classDef frontend fill:#E3F2FD,stroke:#1E88E5,stroke-width:2px,color:#0D47A1;
-    classDef sdk fill:#EDE7F6,stroke:#5E35B1,stroke-width:2px,color:#4A148C;
-    classDef encoding fill:#FFF3E0,stroke:#FB8C00,stroke-width:2px,color:#E65100;
-    classDef dispatch fill:#F1F8E9,stroke:#7CB342,stroke-width:2px,color:#33691E;
-    classDef native fill:#FFEBEE,stroke:#E53935,stroke-width:2px,color:#B71C1C;
-
     A[Solidity Contract] --> B[Solidity Helper Library]
     B --> C[Precompile Address Call]
     C --> D[PVM Runtime Dispatcher]
