@@ -22,6 +22,7 @@ technologies:
   - Solidity
 links:
   github: https://github.com/bolajahmad/dot-crypto-precompiles-primities
+  demo: "https://youtu.be/MtbdnGjOA2k"
   docs: "https://github.com/bolajahmad/dot-crypto-precompiles-primities/tree/main/doc"
 
 metrics:
@@ -35,17 +36,14 @@ hackathon:
 
 # Overview
 
-PVM Precompiles is a developer toolkit for exposing high-value
-cryptographic precompiles to smart contracts running on PVM-enabled
-parachains. The project pairs a Solidity developer surface with a
-Rust-based CLI and crate layer so teams can generate payloads,
-validate encodings, and integrate precompile calls without manually
-handling runtime byte layouts.
+PVM Precompiles is a developer tooling ecosystem for building against **revive runtime precompiles**.
 
-The long-term goal is to make major and useful precompiles accessible
-through a familiar Solidity library and a companion CLI,
-while helping bring Polkadot Revive style runtime capabilities
-to a wider developer audience.
+It provides the SDKs, helper libraries, codecs, CLI tooling, and documentation needed to integrate native runtime functionality into Solidity applications without requiring developers to understand the underlying runtime byte layouts.
+
+The repository demonstrates how runtime capabilities implemented in Rust can be surfaced as ergonomic Solidity APIs while preserving correctness, performance, and compatibility with pallet-revive.
+
+Although the initial implementation focuses on cryptographic primitives such as BLS12-381 and Schnorr verification, the architecture is intentionally generic and is designed to support any runtime module that exposes functionality through Revive precompiles, including pallets such as XCM, Assets, Identity, Governance, and future protocol extensions.
+PVM Precompiles is a developer tooling ecosystem for building against runtime precompiles
 
 # Motivation
 
