@@ -1,7 +1,9 @@
 ---
 title: PVM Precompiles (for revive-compatible runtime(s))
 slug: pvm-runtime-precompile
-
+summary: >
+  A smart contract development tooling for interacting with cryptographic primitives deployed on,
+  Substrate revive runtimes, for Solidity and Rust developers.
 featured: true
 status: active
 year: 2026
@@ -19,7 +21,7 @@ technologies:
   - XCM
   - Solidity
 links:
-  github: "https://github.com/bolajahmad/dot-crypto-precompiles-primities"
+  github: https://github.com/bolajahmad/dot-crypto-precompiles-primities
   demo: "https://youtu.be/MtbdnGjOA2k"
   docs: "https://github.com/bolajahmad/dot-crypto-precompiles-primities/tree/main/doc"
 
@@ -36,72 +38,52 @@ hackathon:
 
 PVM Precompiles is a developer tooling ecosystem for building against **revive runtime precompiles**.
 
-It provides the SDKs, helper libraries, codecs, CLI tooling, and documentation needed to integrate native runtime functionality into Solidity applications without requiring developers to understand the underlying runtime byte layouts.
-
-The repository demonstrates how runtime capabilities implemented in Rust can be surfaced as ergonomic Solidity APIs while preserving correctness, performance, and compatibility with pallet-revive.
-
-Although the initial implementation focuses on cryptographic primitives such as _BLS12-381_ and _Schnorr_ verification, the architecture is intentionally generic and is designed to support any runtime module that exposes functionality through Revive precompiles, including pallets such as XCM, Assets, Identity, Governance, and future protocol extensions.
 PVM Precompiles is a developer tooling ecosystem for building against runtime precompiles
+PVM Precompiles is a developer toolkit for exposing high-value
+cryptographic precompiles to smart contracts running on PVM-enabled
+parachains. The project pairs a Solidity developer surface with a
+Rust-based CLI and crate layer so teams can generate payloads,
+validate encodings, and integrate precompile calls without manually
+handling runtime byte layouts.
+
+The long-term goal is to make major and useful precompiles accessible
+through a familiar Solidity library and a companion CLI,
+while helping bring Polkadot Revive style runtime capabilities
+to a wider developer audience.
+
+# Motivation
+
+Cryptographic operations such as BLS12-381 point arithmetic,
+multi-scalar multiplication, map-to-curve flows, pairing checks,
+and Schnorr verification are expensive to reproduce in Solidity.
+They are also difficult to encode correctly by hand, especially
+when the contract interface, runtime codec, and test vector formats
+all need to agree exactly.
+
+This project solves that by providing:
+
+- a Solidity library that hides low-level precompile address routing and byte encoding
+- a CLI that generates valid test vectors, payloads, and expected outputs
+- Rust crates that implement the encoding, decoding, and deterministic data generation logic
+
+The intended end state is a broad, practical precompile access layer
+for PVM contracts, with reusable tooling for testing and payload generation.
 
 # Achitecture
 
 The repository is organized as a three-layer developer stack:
 
 ```mermaid
-graph TD
-    %% Styling Themes
-    classDef frontend fill:#E3F2FD,stroke:#1E88E5,stroke-width:2px,color:#0D47A1;
-    classDef sdk fill:#EDE7F6,stroke:#5E35B1,stroke-width:2px,color:#4A148C;
-    classDef encoding fill:#FFF3E0,stroke:#FB8C00,stroke-width:2px,color:#E65100;
-    classDef dispatch fill:#F1F8E9,stroke:#7CB342,stroke-width:2px,color:#33691E;
-    classDef native fill:#FFEBEE,stroke:#E53935,stroke-width:2px,color:#B71C1C;
+flowchart LR
+    A[Solidity Contract] --> B[Solidity Helper Library]
+    B --> C[Precompile Address Call]
+    C --> D[PVM Runtime Dispatcher]
+    D --> E[Rust Implementation / Host Function]
+    E --> F[Encoded Result Back to Contract]
 
-    %% Nodes
-    Node1[Solidity Contract]:::frontend
-    Node2[Typed Solidity SDK<br/><i>Structs, Helpers, ABI Layer</i>]:::sdk
-    Node3[SCALE / ABI Encoding Layer]:::encoding
-    Node4[Runtime Precompile Dispatcher]:::dispatch
-    Node5[pallet-revive Runtime Interface]:::dispatch
-    Node6[Native Rust Runtime Implementation]:::native
-    Node7[(Runtime Pallets / Host Functions)]:::native
-
-    %% Flows
-    Node1 --> Node2
-    Node2 --> Node3
-    Node3 --> Node4
-    Node4 --> Node5
-    Node5 --> Node6
-    Node6 --> Node7
-```
-
-```mermaid
-graph TD
-    %% Styling Themes
-    classDef cli fill:#ECEFF1,stroke:#455A64,stroke-width:2px,color:#263238;
-    classDef core fill:#E0F7FA,stroke:#00ACC1,stroke-width:2px,color:#006064;
-    classDef consumer fill:#F3E5F5,stroke:#8E24AA,stroke-width:2px,color:#4A148C;
-
-    %% Layout Structure
-    CLI[Rust CLI]:::cli
-
-    subgraph Core_Engine [Internal Modules]
-        Codecs[Codecs]:::core
-        Payload[Payload Builders]:::core
-        Vector[Vector Generator]:::core
-        Bench[Benchmark Helpers]:::core
-        Valid[Validation]:::core
-    end
-
-    subgraph Consumers [Used By]
-        Sol[Solidity SDK]:::consumer
-        Test[Tests]:::consumer
-        Ex[Examples]:::consumer
-        Doc[Documentation]:::consumer
-    end
-
-    %% Connections
-    CLI --> Core_Engine
-    Core_Engine -->|Used By| Consumers
+    G[CLI / Rust Crates] --> H[Deterministic Payloads and Test Vectors]
+    H --> B
+    H --> A
 ```
 
 Repository roles:
