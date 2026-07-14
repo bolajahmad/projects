@@ -68,19 +68,6 @@ These capabilities are not limited to cryptography. Any runtime pallet can expos
 The repository is organized as a three-layer developer stack:
 
 ```mermaid
-flowchart LR
-    A[Solidity Contract] --> B[Solidity Helper Library]
-    B --> C[Precompile Address Call]
-    C --> D[PVM Runtime Dispatcher]
-    D --> E[Rust Implementation / Host Function]
-    E --> F[Encoded Result Back to Contract]
-
-    G[CLI / Rust Crates] --> H[Deterministic Payloads and Test Vectors]
-    H --> B
-    H --> A
-```
-
-```mermaid
 graph TD
     %% Styling Themes
     classDef frontend fill:#E3F2FD,stroke:#1E88E5,stroke-width:2px,color:#0D47A1;
