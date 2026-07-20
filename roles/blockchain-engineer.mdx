@@ -4,9 +4,9 @@ title: Blockchain (Smart Contract) Engineer
 slug: blockchain-engineer
 
 headline: >
-  Fullstack Blockchain Engineer specializing in smart contract systems,
-  wallet infrastructure, SDK development, and production-ready decentralized
-  applications across Ethereum, Bitcoin, Polkadot, and emerging ecosystems.
+  **Fullstack Blockchain Engineer** specializing in smart contract systems, 
+  wallet infrastructure, cross-chain applications, and developer tooling across 
+  Ethereum, Bitcoin and Polkadot ecosystems.
 
 badge:
   - Smart Contracts
@@ -61,9 +61,7 @@ highlights:
     className="resume-section resume-summary"
 >
 
-I build production-grade blockchain applications spanning smart contracts,
-wallets, SDKs, backend infrastructure and developer tooling across Ethereum,
-Bitcoin, Polkadot and emerging ecosystems.
+Blockchain Engineer with 5+ years of software engineering experience and 3 years building smart contract systems, wallet infrastructure, developer tooling and cross-chain applications. Experienced across Ethereum, Bitcoin and Polkadot ecosystems, with a focus on designing production-ready blockchain products, SDKs and integrations that simplify developer adoption and user interaction.
 
 </section>
 
@@ -72,9 +70,9 @@ Bitcoin, Polkadot and emerging ecosystems.
     className="resume-section resume-technologies"
 >
 
-- **Languages:** Rust, Solidity, Typescript, Scripts, Ink!, CKB Scripts.
-- **Blockchains:** Polkadot, Ethereum, Filecoin, Bitcoin, CKB/Nervos, Lightning Network.
-- **Technologies:** Foundry/Hardhat, Substrate, Bitcoin, Viem, Polkadot API, Wallets, Serverless. Postgres, NextJS/React, Git, Coolify, IPFS.
+- **Smart Contract:** Ink!, Solidity, Typescript, Scripts, Ink!, CKB Scripts, OpenZeppelin, Foundry, Plutus.
+- **Protocol Infrastructure:** Wallets, Account Abstractions, Session Auth, Cross-chain, Runtime Integrations.
+- **Technologies:** Substrate, Viem, Ethers, Polkadot API, Serverless, Postgres, NextJS/React, Git, Coolify, IPFS, SubXT, Bash, Rust.
 
 </section>
 
@@ -93,17 +91,21 @@ Bitcoin, Polkadot and emerging ecosystems.
 
 ### [PolkaBill Protocol](https://github.com/bolajahmad/polkabill-protocol) - A distributed stablecoin-based subscription and payments protocol for EVM wallets
 
-A cross-chain recurring payment system that uses stablecoins billing for digital services. It allows
-merchants to define subscrption plans and collect payment across their services without relying on any
-centralized product other than their wallets.
+Designed a decentralized subscription protocol enabling merchants to
+accept stablecoin payments directly from users' wallets across multiple
+EVM-compatible networks without relying on centralized billing providers.
 
-- Defined a secure payment protocol that compliments every other available tool and can truly be owned by Users.
-- Removed the latency problem that affects cross-chain applications by building a resilient payment protocol on-chain.
-- Wrote gas-optimized and secure Solidity smart contracts that ensure Merchants get settled and Subscribers can easily prove their payment.
-- Exposed Typescript SDKs for merchants to integrate into app, and also dashboard for Users to manage subscriptions.
+- Architected a cross-chain recurring payment protocol coordinating merchant settlement,
+  subscription lifecycle management and wallet-native payment authorization.
+- Designed and implemented secure Solidity smart contracts for subscription plans,
+  payment execution, merchant settlement and on-chain payment verification.
+- Built reusable TypeScript SDKs and merchant integration libraries simplifying protocol adoption across frontend applications and backend services.
+- Developed a full-stack management dashboard enabling users to manage subscriptions while providing merchants with payment analytics and billing administration.
+- Designed the protocol architecture to minimize cross-chain settlement latency while preserving verifiable payment execution and user ownership of funds.
 
 <small>
-  *Skills: Solidity, Wallets, Cross-chain, Solidity, Architecture, React*
+  *Expertise: Smart Contracts, Cross-chain Systems, Wallet, SDK Development,
+  Solidity, React*
 </small>
 
 </article>
@@ -112,18 +114,20 @@ centralized product other than their wallets.
     className="resume-project"
 >
 
-### [Decentralized Agentic Payments](https://github.com/bolajahmad/decentralized-agentic-payment) - machine-native payment infrastructure
+### [Decentralized Agentic Payments](https://github.com/bolajahmad/decentralized-agentic-payment) - Machine-native payment infrastructure for autonomous agents
 
-that enables AI agents to autonomously consume APIs and compute services under
-user-controlled authorization.
+Designed a payment protocol enabling AI agents to securely purchase APIs
+and digital services through user-controlled wallet authorization and
+verifiable on-chain settlement.
 
-- Wrote ERC-4735 based smart contracts to allow session-based payments by machines for digital services.
-- Improved security and efficiency of x402 payents by implement proof-based batched payment approaches.
-- Exposed JS-based CLI tools and SDKs for allowing EOA to monitor activities of agents (or machines) spendign their funds.
-- Integrated application with a live agent (like CLaude desktop) to trigger payment using chat and code options.
+- Implemented Solidity smart contracts supporting session-scoped authorization and programmable spending limits for autonomous agents.
+- Designed a proof-based settlement mechanism reducing on-chain transaction overhead through batched payment commitments while preserving payment verifiability.
+- Built JavaScript SDKs and CLI tooling allowing wallet owners to configure, monitor and audit agent payment activity in real time.
+- Integrated the protocol with LLM-driven agent workflows, enabling autonomous payment execution through conversational interfaces and developer tooling.
 
 <small>
-  *Skills: EVM, Wallets, x402, MCP, Architecture, Express, Goldsky/TheGraph*
+  *Expertise: Account Abstraction, Wallets, Session Auth, Solidity, SDK,
+  Development, x402, MCP, Express, Goldsky/TheGraph*
 </small>
 
 </article>
@@ -132,13 +136,21 @@ user-controlled authorization.
     className="resume-project"
 >
 
-### [PVM Runtime Precompiles](https://github.com/bolajahmad/dot-crypto-precompiles-primities) - Developer tooling for Smart contract devs in Substrate chains.
+### [PVM Runtime Precompiles](https://github.com/bolajahmad/dot-crypto-precompiles-primities) - Developer tooling for Substrate-native runtime cryptography.
 
-A Precompiles-based developer tool for building high-level computation, direct runtime-access to gated features, for Substrate based smart contracts.
+Built developer tooling exposing native runtime cryptographic precompiles to
+Solidity developers, enabling access to advanced cryptographic operations
+without reimplementing them inside smart contracts.
 
-- Created tooling that improves developer experience by over 30% in benchmarks.
-- Wrote Rust scripts of advanced cryptography like BLS, Schnorr and many more.
-- Exposed Solidity libraries, Rust crates that improve contract capabilities by 100%
+- Developed Rust libraries implementing encoding, decoding and payload generation for BLS12-381, Schnorr signatures and additional runtime cryptographic primitives.
+- Built Solidity helper libraries exposing strongly typed interfaces for runtime precompiles, significantly simplifying contract integration with native runtime functionality.
+- Designed reusable CLI tooling generating deterministic payloads, test vectors and validation data for smart contract development and protocol testing.
+- Improved the developer experience for Revive-compatible runtimes by providing a complete tooling layer spanning Solidity libraries, Rust crates and command-line utilities.
+
+<small>
+  *Expertise: Runtime Engineering, Cryptography, Rust, Solidity, Developer
+  Tooling, Polkadot SDK*
+</small>
 
 </article>
 
@@ -234,10 +246,8 @@ Jul 2025 — Oct 2025
 
 **Kite AI Hackathon**: Researched machine-native payment infrastructure combining account abstraction, session authorization and cryptographic settlement for autonomous agents.
 
-**DAO Global Hackathon**: Designed governance plugins for Aragon OSx integrating Kleros arbitration, Lens Protocol discussions and secure wallet messaging.
-
 ### Technical Programs
 
-**_Bitshala Bitcoin Bootcamp_**: • Implemented Bitcoin transaction construction, scripting exercises, wallet generation and protocol internals through practical Rust projects.
+**_Bitshala Bitcoin Bootcamp_**: - Implemented Bitcoin transaction construction, scripting exercises, wallet generation and protocol internals through practical Rust projects.
 
 </section>
